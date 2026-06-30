@@ -34,4 +34,6 @@ export interface ActiveEvent {
   encargados: EncargadoDTO[];
   /** Número actual de inscritos */
   currentRegistrations: number;
+  /** Estado de activación del evento */
+  isActive: boolean;
 }

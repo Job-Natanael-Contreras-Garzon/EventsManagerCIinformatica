@@ -1,0 +1,564 @@
+// src/app/admin/eventos/EventsManager.tsx
+"use client";
+
+import { useState, useTransition, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { eventSchema, type EventInput } from "@/modules/events/schema";
+import { upsertEvent, deleteEvent } from "@/modules/events/actions";
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface EventData {
+  id: string;
+  name: string;
+  description: string | null;
+  date: Date;
+  isActive: boolean;
+  registrationDeadline: Date | null;
+  maxParticipants: number | null;
+  categoryId: string;
+  category: {
+    name: string;
+  };
+  _count: {
+    registrations: number;
+    teams: number;
+  };
+}
+
+interface EventsManagerProps {
+  initialEvents: EventData[];
+  categories: Category[];
+}
+
+// Helper to determine type based on name/description keywords
+const getEventTypeName = (name: string, description?: string | null): "TEAM" | "INDIVIDUAL" => {
+  const n = name.toLowerCase();
+  const d = (description || "").toLowerCase();
+  const teamKeywords = ["5v5", "team", "equipo", "lol", "league of legends", "valorant", "futsal", "fútbol", "futbol"];
+  return teamKeywords.some(keyword => n.includes(keyword) || d.includes(keyword)) ? "TEAM" : "INDIVIDUAL";
+};
+
+// Helper for date formatting in datetime-local inputs (timezone-safe)
+function toDatetimeLocalString(date: Date | string | null | undefined): string {
+  if (!date) return "";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "";
+  const tzOffset = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+}
+
+export function EventsManager({ initialEvents, categories }: EventsManagerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [generalError, setGeneralError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<EventInput>({
+    resolver: zodResolver(eventSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      type: "INDIVIDUAL",
+      categoryId: categories[0]?.id || "",
+      maxParticipants: null,
+      isActive: true,
+      date: toDatetimeLocalString(new Date(Date.now() + 86400000)), // tomorrow
+      registrationDeadline: "",
+    },
+  });
+
+  // Handle open for creating new event
+  const handleNewEvent = () => {
+    setEditingEvent(null);
+    setGeneralError(null);
+    reset({
+      name: "",
+      description: "",
+      type: "INDIVIDUAL",
+      categoryId: categories[0]?.id || "",
+      maxParticipants: null,
+      isActive: true,
+      date: toDatetimeLocalString(new Date(Date.now() + 86400000)),
+      registrationDeadline: "",
+    });
+    setIsOpen(true);
+  };
+
+  // Handle open for editing event
+  const handleEditEvent = (event: EventData) => {
+    setEditingEvent(event);
+    setGeneralError(null);
+    
+    const detectedType = getEventTypeName(event.name, event.description);
+    
+    reset({
+      id: event.id,
+      name: event.name,
+      description: event.description || "",
+      type: detectedType,
+      categoryId: event.categoryId,
+      maxParticipants: event.maxParticipants,
+      isActive: event.isActive,
+      date: toDatetimeLocalString(event.date),
+      registrationDeadline: event.registrationDeadline ? toDatetimeLocalString(event.registrationDeadline) : "",
+    });
+    setIsOpen(true);
+  };
+
+  const onSubmit = (data: EventInput) => {
+    setGeneralError(null);
+    startTransition(async () => {
+      const response = await upsertEvent(data);
+
+      if (!response.success) {
+        setGeneralError(response.error);
+        if (response.fieldErrors) {
+          Object.entries(response.fieldErrors).forEach(([field, messages]) => {
+            setError(field as keyof EventInput, {
+              message: messages?.[0],
+            });
+          });
+        }
+        return;
+      }
+
+      // Close and reset
+      setIsOpen(false);
+      setEditingEvent(null);
+      reset();
+    });
+  };
+
+  const handleDeleteEvent = (id: string, name: string) => {
+    const confirmed = window.confirm(
+      `¿Estás completamente seguro de eliminar el torneo "${name}"?\nEsta acción es irreversible y eliminará todos los equipos y participantes inscritos en él.`
+    );
+    if (!confirmed) return;
+
+    startTransition(async () => {
+      const response = await deleteEvent(id);
+      if (!response.success) {
+        alert(response.error || "Ocurrió un error al intentar eliminar el torneo.");
+      }
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-zinc-150 flex flex-col items-center pb-safe font-sans selection:bg-violet-650 selection:text-white">
+      
+      {/* Sticky Premium Header with Navigation for Admin Functions */}
+      <header className="sticky top-0 z-40 w-full max-w-lg bg-black/80 backdrop-blur-md border-b border-zinc-900 px-4 py-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-fuchsia-600 flex items-center justify-center font-bold text-sm text-white shadow-md shadow-violet-500/20">
+              AD
+            </div>
+            <div>
+              <h1 className="text-sm font-bold tracking-tight text-white leading-none">
+                Admin Panel
+              </h1>
+              <span className="text-[10px] text-zinc-550 font-medium">
+                CI INGENIERÍA INFORMÁTICA
+              </span>
+            </div>
+          </div>
+          
+          <div className="sm:hidden">
+            <Link
+              href="/admin/login"
+              className="text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-colors min-h-[44px] flex items-center px-2"
+            >
+              Salir
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-zinc-900 pt-2 sm:border-0 sm:pt-0">
+          <nav className="flex items-center gap-2">
+            <Link
+              href="/admin/dashboard"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent transition-all min-h-[32px] flex items-center"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/admin/eventos"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 pointer-events-none"
+            >
+              Eventos
+            </Link>
+            <Link
+              href="/admin/registrados"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent transition-all min-h-[32px] flex items-center"
+            >
+              Registrados
+            </Link>
+          </nav>
+          
+          <Link
+            href="/admin/login"
+            className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-455 hover:text-zinc-200 bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 active:scale-95 transition-all min-h-[32px]"
+          >
+            Cerrar Sesión
+          </Link>
+        </div>
+      </header>
+
+      {/* Main Admin Content Container */}
+      <main className="w-full max-w-lg px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
+        
+        {/* Title Area with "+ Nuevo" Button */}
+        <section className="flex items-center justify-between gap-4">
+          <div>
+            <span className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">
+              Configuración de Torneos
+            </span>
+            <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl">
+              Gestión de Eventos
+            </h2>
+          </div>
+          
+          <button
+            onClick={handleNewEvent}
+            className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-violet-650 to-fuchsia-600 hover:brightness-110 active:scale-95 transition-all min-h-[40px] shadow-lg shadow-violet-600/15"
+          >
+            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            Nuevo Torneo
+          </button>
+        </section>
+
+        {/* Compact List View */}
+        <section className="flex flex-col gap-3">
+          {initialEvents.length > 0 ? (
+            initialEvents.map((event) => {
+              const type = getEventTypeName(event.name, event.description);
+              const isTeam = type === "TEAM";
+              
+              // Count current registrations
+              const count = isTeam ? event._count.teams : event._count.registrations;
+              const max = event.maxParticipants;
+              const occupancyText = max ? `${count}/${max}` : `${count}/∞`;
+
+              return (
+                <article
+                  key={event.id}
+                  className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-900 flex items-center justify-between gap-4 hover:border-zinc-800 transition-all duration-150"
+                >
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    {/* Badge line */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+                        {event.category.name}
+                      </span>
+                      <span
+                        className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                          isTeam
+                            ? "bg-violet-500/10 border-violet-500/20 text-violet-400"
+                            : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                        }`}
+                      >
+                        {isTeam ? "EQUIPO" : "INDIVIDUAL"}
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                          event.isActive
+                            ? "text-emerald-450"
+                            : "text-rose-500"
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${event.isActive ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
+                        {event.isActive ? "Abierto" : "Cerrado"}
+                      </span>
+                    </div>
+
+                    {/* Event Name */}
+                    <h3 className="text-sm font-bold text-white tracking-tight line-clamp-1">
+                      {event.name}
+                    </h3>
+                    
+                    {/* Occupancy details */}
+                    <p className="text-[11px] text-zinc-500">
+                      Ocupación: <span className="font-mono text-zinc-300 font-semibold">{occupancyText}</span> {isTeam ? "Equipos" : "Jugadores"}
+                    </p>
+                  </div>
+
+                  {/* Actions column */}
+                  <div className="shrink-0 flex items-center gap-2">
+                    <button
+                      onClick={() => handleEditEvent(event)}
+                      className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-855 hover:border-zinc-700 active:scale-95 transition-all min-h-[36px]"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDeleteEvent(event.id, event.name)}
+                      className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-rose-400 hover:text-rose-350 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 active:scale-95 transition-all min-h-[36px]"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </article>
+              );
+            })
+          ) : (
+            <div className="p-10 rounded-2xl bg-zinc-950/40 border border-zinc-900 text-center text-xs text-zinc-500 font-medium">
+              No hay torneos registrados. ¡Crea uno nuevo arriba!
+            </div>
+          )}
+        </section>
+      </main>
+
+      {/* Slide-Up Bottom Sheet Modal */}
+      {isOpen && (
+        <>
+          {/* Backdrop overlay */}
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 transition-opacity"
+            onClick={() => setIsOpen(false)}
+          />
+
+          {/* Drawer sheet container */}
+          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-zinc-950 border-t border-zinc-900 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl transition-all duration-300 max-h-[88vh] overflow-y-auto flex flex-col">
+            
+            {/* Top native drag bar */}
+            <div className="w-12 h-1 bg-zinc-850 rounded-full mx-auto mb-5 shrink-0" />
+
+            {/* Header info */}
+            <div className="mb-6 shrink-0 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-black tracking-tight text-white">
+                  {editingEvent ? "Editar Torneo" : "Crear Nuevo Torneo"}
+                </h3>
+                <p className="text-xs text-zinc-500">
+                  {editingEvent ? "Modifica la configuración de este torneo" : "Completa la ficha técnica del nuevo torneo"}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-850 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 flex-1">
+              
+              {/* General action errors */}
+              {generalError && (
+                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-450 text-xs font-medium leading-relaxed">
+                  {generalError}
+                </div>
+              )}
+
+              {/* Título */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="name">
+                  Título del Torneo
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  placeholder="Ej. Torneo de Valorant 5v5"
+                  {...register("name")}
+                  className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                />
+                {errors.name && (
+                  <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                    {errors.name.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Descripción */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="description">
+                  Descripción
+                </label>
+                <textarea
+                  id="description"
+                  placeholder="Detalles sobre premios, modalidad, reglas..."
+                  rows={3}
+                  {...register("description")}
+                  className="w-full min-h-[80px] p-3.5 bg-zinc-900 border border-zinc-855 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                />
+                {errors.description && (
+                  <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                    {errors.description.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Categoría y Tipo de juego */}
+              <div className="grid grid-cols-2 gap-4">
+                
+                {/* Categoría */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="categoryId">
+                    Categoría
+                  </label>
+                  <select
+                    id="categoryId"
+                    {...register("categoryId")}
+                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all appearance-none"
+                  >
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.categoryId && (
+                    <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                      {errors.categoryId.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Tipo de Juego */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="type">
+                    Tipo de Juego
+                  </label>
+                  <select
+                    id="type"
+                    {...register("type")}
+                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all appearance-none"
+                  >
+                    <option value="INDIVIDUAL">Individual</option>
+                    <option value="TEAM">En Equipo</option>
+                  </select>
+                  {errors.type && (
+                    <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                      {errors.type.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Cupos y Estado */}
+              <div className="grid grid-cols-2 gap-4">
+                
+                {/* Máximo de cupos */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="maxParticipants">
+                    Máximo de Cupos
+                  </label>
+                  <input
+                    id="maxParticipants"
+                    type="number"
+                    placeholder="Ej. 16 (vacío = ∞)"
+                    {...register("maxParticipants")}
+                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                  />
+                  {errors.maxParticipants && (
+                    <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                      {errors.maxParticipants.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Estado */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="isActive">
+                    Inscripciones
+                  </label>
+                  <select
+                    id="isActive"
+                    {...register("isActive", {
+                      setValueAs: (val) => val === "true" || val === true,
+                    })}
+                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all appearance-none"
+                  >
+                    <option value="true">Abiertas</option>
+                    <option value="false">Cerradas</option>
+                  </select>
+                  {errors.isActive && (
+                    <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                      {errors.isActive.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Fechas */}
+              <div className="grid grid-cols-2 gap-4">
+                
+                {/* Fecha del evento */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="date">
+                    Fecha del Evento
+                  </label>
+                  <input
+                    id="date"
+                    type="datetime-local"
+                    {...register("date")}
+                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                  />
+                  {errors.date && (
+                    <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                      {errors.date.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Límite de registro */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="registrationDeadline">
+                    Límite Registro
+                  </label>
+                  <input
+                    id="registrationDeadline"
+                    type="datetime-local"
+                    {...register("registrationDeadline")}
+                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                  />
+                  {errors.registrationDeadline && (
+                    <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                      {errors.registrationDeadline.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="pt-4 grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center w-full min-h-[44px] rounded-xl bg-zinc-900 hover:bg-zinc-850 text-zinc-400 border border-zinc-850 text-sm font-semibold transition-all duration-150 active:scale-95"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending || isSubmitting}
+                  className="flex items-center justify-center w-full min-h-[44px] rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-bold shadow-lg shadow-violet-600/15 transition-all duration-150 active:scale-95 hover:brightness-110 disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  {isPending || isSubmitting ? "Guardando..." : editingEvent ? "Guardar Cambios" : "Crear Torneo"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

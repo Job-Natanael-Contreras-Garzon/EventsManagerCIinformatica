@@ -40,6 +40,7 @@ export async function getActiveEvents(): Promise<ActiveEvent[]> {
       name: true,
       description: true,
       date: true,
+      isActive: true,
       registrationDeadline: true,
       maxParticipants: true,
       category: {
@@ -69,6 +70,7 @@ export async function getActiveEvents(): Promise<ActiveEvent[]> {
     name: event.name,
     description: event.description,
     date: event.date.toISOString(),
+    isActive: event.isActive,
     registrationDeadline: event.registrationDeadline?.toISOString() ?? null,
     maxParticipants: event.maxParticipants,
     category: {
