@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  events    Event[]
+
+  @@map("categories")
+}
+
+model Event {
+  id                   String         @id @default(uuid())
+  name                 String
+  description          String?
+  date                 DateTime
+  isActive             Boolean        @default(true)
+  registrationDeadline DateTime?
+  maxParticipants      Int?
+  categoryId           String
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  encargados           Encargado[]
+  category             Category       @relation(fields: [categoryId], references: [id])
+  registrations        Registration[]
+  teams                Team[]
+
+  @@map("events")
+}
+
+model Encargado {
+  id          String   @id @default(uuid())
+  name        String
+  /// Número de celular en formato internacional (ej: 573001234567)
+  phone       String
+  /// Link directo para abrir WhatsApp: https://wa.me/{phone}
+  whatsappUrl String
+  eventId     String
+  createdAt   DateTime @default(now())
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("encargados")
+}
+
+model Participant {
+  id            String         @id @default(uuid())
+  fullName      String
+  /// Correo electrónico — unique cuando está presente, nullable
+  email         String?        @unique
+  /// Código universitario de identificación (ej: 20231234)
+  registerCode  String         @unique
+  /// Número de celular del participante (requerido)
+  phone         String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  registrations Registration[]
+  leaderOf      Team[]         @relation("TeamLeader")
+
+  @@map("participants")
+}
+
+model Registration {
+  id               String             @id @default(uuid())
+  confirmationCode String             @unique
+  status           RegistrationStatus @default(PENDING)
+  participantId    String
+  eventId          String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  event            Event              @relation(fields: [eventId], references: [id])
+  participant      Participant        @relation(fields: [participantId], references: [id])
+
+  // Equipo al que pertenece la inscripción (opcional)
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id])
+
+  @@unique([participantId, eventId])
+  @@map("registrations")
+}
+
+// ─────────────────────────────────────────────
+// Model: Team
+// Grupo/equipo registrado para un evento.
+// ─────────────────────────────────────────────
+model Team {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique // Código único de 6 caracteres (ej: "A8B2C4")
+  
+  // Evento al que pertenece el equipo (FK)
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  
+  // Participante líder (FK)
+  leaderId  String
+  leader    Participant @relation("TeamLeader", fields: [leaderId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Inscripciones de los miembros del equipo
+  registrations Registration[]
+
+  @@map("teams")
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
