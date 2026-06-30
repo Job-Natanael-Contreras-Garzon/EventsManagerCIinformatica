@@ -89,7 +89,7 @@ export function RegistrationForm({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="w-full space-y-6 bg-zinc-950/40 p-5 sm:p-6 rounded-2xl border border-zinc-900 shadow-2xl relative"
+      className="w-full space-y-6 bg-brand-dark/45 p-5 sm:p-6 rounded-2xl border border-brand-blue/30 shadow-2xl relative"
       noValidate
     >
       {/* General Error Message from Server */}
@@ -108,15 +108,15 @@ export function RegistrationForm({
 
       {/* Conditionally render Team registration tab selection */}
       {registrationMode === "TEAM" && (
-        <div className="grid grid-cols-2 p-1 bg-zinc-900/60 border border-zinc-800/80 rounded-xl mb-6">
+        <div className="grid grid-cols-2 p-1 bg-brand-navy/60 border border-brand-blue/30 rounded-xl mb-6">
           <button
             type="button"
             onClick={() => handleTabChange("create_team")}
             disabled={isPending}
             className={`w-full py-2.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-150 min-h-[44px] ${
               registrationType === "create_team"
-                ? "bg-zinc-800 text-white border border-zinc-700/60 shadow"
-                : "text-zinc-400 hover:text-zinc-250 active:scale-95 disabled:opacity-40"
+                ? "bg-brand-blue text-white border border-brand-blue/40 shadow"
+                : "text-brand-sky/60 hover:text-brand-sky active:scale-95 disabled:opacity-40"
             }`}
           >
             Crear un Equipo
@@ -127,8 +127,8 @@ export function RegistrationForm({
             disabled={isPending}
             className={`w-full py-2.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-all duration-150 min-h-[44px] ${
               registrationType === "join_team"
-                ? "bg-zinc-800 text-white border border-zinc-700/60 shadow"
-                : "text-zinc-400 hover:text-zinc-250 active:scale-95 disabled:opacity-40"
+                ? "bg-brand-blue text-white border border-brand-blue/40 shadow"
+                : "text-brand-sky/60 hover:text-brand-sky active:scale-95 disabled:opacity-40"
             }`}
           >
             Unirse a un Equipo
@@ -141,7 +141,7 @@ export function RegistrationForm({
         <div className="space-y-1.5 animate-fadeIn">
           <label
             htmlFor="teamName"
-            className="text-xs font-semibold uppercase tracking-wider text-zinc-450 block"
+            className="text-xs font-semibold uppercase tracking-wider text-brand-sky/80 block"
           >
             Nombre del Equipo <span className="text-rose-555">*</span>
           </label>
@@ -151,7 +151,7 @@ export function RegistrationForm({
             placeholder="Ej: Los Programadores Veloces"
             disabled={isPending}
             {...register("teamName")}
-            className="w-full min-h-[48px] px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-100 text-base placeholder:text-zinc-650 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:border-transparent transition-all disabled:opacity-40"
+            className="w-full min-h-[48px] px-4 py-3 bg-brand-navy/60 border border-brand-blue/40 rounded-xl text-white text-base placeholder:text-brand-sky/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky focus-visible:border-transparent transition-all disabled:opacity-40"
           />
           {errors.teamName && (
             <p role="alert" className="text-xs text-rose-450 mt-1 pl-1">
@@ -165,7 +165,7 @@ export function RegistrationForm({
         <div className="space-y-1.5 animate-fadeIn">
           <label
             htmlFor="teamCode"
-            className="text-xs font-semibold uppercase tracking-wider text-zinc-450 block"
+            className="text-xs font-semibold uppercase tracking-wider text-brand-sky/80 block"
           >
             Código de Equipo (6 caracteres) <span className="text-rose-555">*</span>
           </label>
@@ -176,7 +176,7 @@ export function RegistrationForm({
             placeholder="Ej: A8B2C4"
             disabled={isPending}
             {...register("teamCode")}
-            className="w-full min-h-[48px] px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-100 text-base placeholder:text-zinc-650 uppercase font-mono tracking-widest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:border-transparent transition-all disabled:opacity-40"
+            className="w-full min-h-[48px] px-4 py-3 bg-brand-navy/60 border border-brand-blue/40 rounded-xl text-white text-base placeholder:text-brand-sky/30 uppercase font-mono tracking-widest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky focus-visible:border-transparent transition-all disabled:opacity-40"
           />
           {errors.teamCode && (
             <p role="alert" className="text-xs text-rose-450 mt-1 pl-1">
@@ -188,8 +188,8 @@ export function RegistrationForm({
 
       {/* Separator / Subtitle for Team Leader/Member Info */}
       {registrationMode === "TEAM" && (
-        <div className="pt-4 border-t border-zinc-900/80">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-violet-400">
+        <div className="pt-4 border-t border-brand-blue/20">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-brand-sky">
             {registrationType === "create_team" ? "Datos del Líder del Equipo" : "Datos del Integrante"}
           </h3>
         </div>
@@ -201,7 +201,7 @@ export function RegistrationForm({
         <div className="space-y-1.5">
           <label
             htmlFor="fullName"
-            className="text-xs font-semibold uppercase tracking-wider text-zinc-450 block"
+            className="text-xs font-semibold uppercase tracking-wider text-brand-sky/80 block"
           >
             Nombre Completo <span className="text-rose-555">*</span>
           </label>
@@ -211,7 +211,7 @@ export function RegistrationForm({
             placeholder="Nombre y Apellidos"
             disabled={isPending}
             {...register("fullName")}
-            className="w-full min-h-[48px] px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-100 text-base placeholder:text-zinc-650 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:border-transparent transition-all disabled:opacity-40"
+            className="w-full min-h-[48px] px-4 py-3 bg-brand-navy/60 border border-brand-blue/40 rounded-xl text-white text-base placeholder:text-brand-sky/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky focus-visible:border-transparent transition-all disabled:opacity-40"
           />
           {errors.fullName && (
             <p role="alert" className="text-xs text-rose-450 mt-1 pl-1">
@@ -224,7 +224,7 @@ export function RegistrationForm({
         <div className="space-y-1.5">
           <label
             htmlFor="registerCode"
-            className="text-xs font-semibold uppercase tracking-wider text-zinc-450 block"
+            className="text-xs font-semibold uppercase tracking-wider text-brand-sky/80 block"
           >
             Código Universitario / Registro <span className="text-rose-555">*</span>
           </label>
@@ -234,7 +234,7 @@ export function RegistrationForm({
             placeholder="Ej: 202105432"
             disabled={isPending}
             {...register("registerCode")}
-            className="w-full min-h-[48px] px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-100 text-base placeholder:text-zinc-650 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:border-transparent transition-all disabled:opacity-40"
+            className="w-full min-h-[48px] px-4 py-3 bg-brand-navy/60 border border-brand-blue/40 rounded-xl text-white text-base placeholder:text-brand-sky/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky focus-visible:border-transparent transition-all disabled:opacity-40"
           />
           {errors.registerCode && (
             <p role="alert" className="text-xs text-rose-450 mt-1 pl-1">
@@ -247,7 +247,7 @@ export function RegistrationForm({
         <div className="space-y-1.5">
           <label
             htmlFor="phone"
-            className="text-xs font-semibold uppercase tracking-wider text-zinc-450 block"
+            className="text-xs font-semibold uppercase tracking-wider text-brand-sky/80 block"
           >
             Celular / WhatsApp (Bolivia) <span className="text-rose-555">*</span>
           </label>
@@ -257,7 +257,7 @@ export function RegistrationForm({
             placeholder="Ej: 70712345"
             disabled={isPending}
             {...register("phone")}
-            className="w-full min-h-[48px] px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-100 text-base placeholder:text-zinc-650 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:border-transparent transition-all disabled:opacity-40"
+            className="w-full min-h-[48px] px-4 py-3 bg-brand-navy/60 border border-brand-blue/40 rounded-xl text-white text-base placeholder:text-brand-sky/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky focus-visible:border-transparent transition-all disabled:opacity-40"
           />
           {errors.phone && (
             <p role="alert" className="text-xs text-rose-450 mt-1 pl-1">
@@ -270,7 +270,7 @@ export function RegistrationForm({
         <div className="space-y-1.5">
           <label
             htmlFor="email"
-            className="text-xs font-semibold uppercase tracking-wider text-zinc-450 block"
+            className="text-xs font-semibold uppercase tracking-wider text-brand-sky/80 block"
           >
             Correo Electrónico <span className="text-rose-555">*</span>
           </label>
@@ -280,7 +280,7 @@ export function RegistrationForm({
             placeholder="correo@ejemplo.com"
             disabled={isPending}
             {...register("email")}
-            className="w-full min-h-[48px] px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-100 text-base placeholder:text-zinc-650 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:border-transparent transition-all disabled:opacity-40"
+            className="w-full min-h-[48px] px-4 py-3 bg-brand-navy/60 border border-brand-blue/40 rounded-xl text-white text-base placeholder:text-brand-sky/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky focus-visible:border-transparent transition-all disabled:opacity-40"
           />
           {errors.email && (
             <p role="alert" className="text-xs text-rose-450 mt-1 pl-1">
@@ -300,9 +300,9 @@ export function RegistrationForm({
               {...register("acceptedTerms")}
               className="peer sr-only"
             />
-            <div className="w-5.5 h-5.5 rounded-md border border-zinc-800 bg-zinc-900 flex items-center justify-center transition-all peer-checked:bg-violet-600 peer-checked:border-violet-500 peer-focus-visible:ring-2 peer-focus-visible:ring-violet-500/50 peer-disabled:opacity-40">
+            <div className="w-5.5 h-5.5 rounded-md border border-brand-blue/40 bg-brand-navy flex items-center justify-center transition-all peer-checked:bg-brand-sky peer-checked:border-brand-sky peer-focus-visible:ring-2 peer-focus-visible:ring-brand-sky/50 peer-disabled:opacity-40">
               <svg
-                className="w-3.5 h-3.5 text-white scale-0 transition-transform peer-checked:scale-100"
+                className="w-3.5 h-3.5 text-brand-navy scale-0 transition-transform peer-checked:scale-100"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="3"
@@ -312,7 +312,7 @@ export function RegistrationForm({
               </svg>
             </div>
           </div>
-          <span className="text-xs text-zinc-400 leading-tight pt-3">
+          <span className="text-xs text-brand-light-gray/80 leading-tight pt-3">
             Acepto los términos y condiciones de inscripción y certifico que la información provista es verdadera. <span className="text-rose-500">*</span>
           </span>
         </label>
@@ -327,11 +327,11 @@ export function RegistrationForm({
       <button
         type="submit"
         disabled={isPending}
-        className="w-full min-h-[52px] bg-violet-600 hover:bg-violet-500 active:scale-[0.98] active:bg-violet-750 text-white font-semibold text-base rounded-xl shadow-lg shadow-violet-900/10 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-450 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+        className="w-full min-h-[52px] bg-brand-sky hover:bg-brand-sky/90 active:scale-[0.98] active:bg-brand-sky/85 text-brand-navy font-bold text-base rounded-xl shadow-lg shadow-brand-navy/30 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
       >
         {isPending ? (
           <>
-            <svg className="animate-spin h-5.5 w-5.5 text-white" fill="none" viewBox="0 0 24 24">
+            <svg className="animate-spin h-5.5 w-5.5 text-brand-navy" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>

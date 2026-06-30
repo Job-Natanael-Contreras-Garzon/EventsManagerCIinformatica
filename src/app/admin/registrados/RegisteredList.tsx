@@ -243,20 +243,20 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
       {/* ──────────────────────────────────────────────────────── */}
       {/* A. CLIENT INTERACTION AREA (Dark Theme / Standard View)  */}
       {/* ──────────────────────────────────────────────────────── */}
-      <div className="min-h-screen w-full bg-black text-zinc-150 flex flex-col items-center pb-safe font-sans selection:bg-violet-650 selection:text-white print:hidden">
+      <div className="min-h-screen w-full bg-transparent text-brand-light-gray flex flex-col items-center pb-safe font-sans selection:bg-brand-sky selection:text-brand-navy print:hidden">
         
         {/* Sticky Premium Header with Navigation for Admin Functions */}
-        <header className="sticky top-0 z-40 w-full max-w-lg bg-black/80 backdrop-blur-md border-b border-zinc-900 px-4 py-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+        <header className="sticky top-0 z-40 w-full max-w-lg bg-brand-navy/80 backdrop-blur-md border-b border-brand-blue/35 px-4 py-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-fuchsia-600 flex items-center justify-center font-bold text-sm text-white shadow-md shadow-violet-500/20">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-blue to-brand-sky flex items-center justify-center font-bold text-sm text-brand-navy shadow-md shadow-brand-sky/20">
                 AD
               </div>
               <div>
                 <h1 className="text-sm font-bold tracking-tight text-white leading-none">
                   Admin Panel
                 </h1>
-                <span className="text-[10px] text-zinc-555 font-medium uppercase">
+                <span className="text-[10px] text-brand-sky/60 font-medium uppercase">
                   CI INGENIERÍA INFORMÁTICA
                 </span>
               </div>
@@ -273,23 +273,23 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
           </div>
 
           {/* Admin Navigation Hub Links */}
-          <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-zinc-900 pt-2 sm:border-0 sm:pt-0">
+          <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-brand-blue/20 pt-2 sm:border-0 sm:pt-0">
             <nav className="flex items-center gap-2">
               <Link
                 href="/admin/dashboard"
-                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent transition-all min-h-[32px] flex items-center"
+                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
               >
                 Dashboard
               </Link>
               <Link
                 href="/admin/eventos"
-                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent transition-all min-h-[32px] flex items-center"
+                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
               >
                 Eventos
               </Link>
               <Link
                 href="/admin/registrados"
-                className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 pointer-events-none"
+                className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-brand-sky bg-brand-sky/10 border border-brand-sky/20 pointer-events-none"
               >
                 Registrados
               </Link>
@@ -297,7 +297,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
             
             <Link
               href="/admin/login"
-              className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-450 hover:text-zinc-200 bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 active:scale-95 transition-all min-h-[32px]"
+              className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-white bg-brand-dark/65 border border-brand-blue/30 hover:bg-brand-blue/40 active:scale-95 transition-all min-h-[32px]"
             >
               Cerrar Sesión
             </Link>
@@ -309,7 +309,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
           
           {/* Title Area */}
           <section className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">
+            <span className="text-[10px] font-bold text-brand-sky uppercase tracking-widest">
               Base de Datos
             </span>
             <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl">
@@ -318,11 +318,11 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
           </section>
 
           {/* Filtering Console */}
-          <section className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-900 space-y-4">
+          <section className="p-4 rounded-2xl bg-brand-dark/45 border border-brand-blue/30 space-y-4">
             <div className="flex flex-col gap-3">
               {/* Event Selector (Dropdown) */}
               <div className="flex-1">
-                <label htmlFor="event-filter" className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
+                <label htmlFor="event-filter" className="block text-[10px] font-bold uppercase tracking-wider text-brand-sky/60 mb-1.5">
                   Filtrar por Torneo
                 </label>
                 <div className="relative">
@@ -330,7 +330,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                     id="event-filter"
                     value={selectedEvent}
                     onChange={(e) => setSelectedEvent(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white font-semibold focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 appearance-none min-h-[44px]"
+                    className="w-full bg-brand-navy/60 border border-brand-blue/35 rounded-xl px-3 py-2.5 text-xs text-white font-semibold focus:outline-none focus:border-brand-sky focus:ring-1 focus:ring-brand-sky appearance-none min-h-[44px]"
                   >
                     <option value="all">Mostrar Todos los Torneos</option>
                     {events.map((e) => (
@@ -349,7 +349,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
 
               {/* Text Search Input */}
               <div className="flex-1">
-                <label htmlFor="search-text" className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
+                <label htmlFor="search-text" className="block text-[10px] font-bold uppercase tracking-wider text-brand-sky/60 mb-1.5">
                   Buscar Participante o Equipo
                 </label>
                 <div className="relative">
@@ -359,9 +359,9 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                     placeholder="Escribe nombre, correo, código o equipo..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-zinc-550 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 min-h-[44px]"
+                    className="w-full bg-brand-navy/60 border border-brand-blue/35 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-brand-sky/40 focus-visible:outline-none focus-visible:border-brand-sky focus-visible:ring-1 focus-visible:ring-brand-sky min-h-[44px]"
                   />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-550">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-brand-sky/45">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
@@ -371,7 +371,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
 
               {/* Column Tags (Pills for showing/hiding columns) */}
               <div className="space-y-2 pt-1">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-brand-sky/70">
                   Columnas de Reporte (Tags)
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -383,8 +383,8 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                         onClick={() => toggleColumn(col.key)}
                         className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer min-h-[30px] ${
                           isVisible
-                            ? "text-violet-400 bg-violet-500/10 border border-violet-500/20"
-                            : "text-zinc-500 bg-zinc-900 border border-zinc-850 hover:text-zinc-400 hover:bg-zinc-850"
+                            ? "text-brand-sky bg-brand-sky/10 border border-brand-sky/20"
+                            : "text-brand-sky/50 bg-brand-dark/60 border border-brand-blue/30 hover:text-brand-sky hover:bg-brand-blue/40"
                         }`}
                       >
                         {col.label}
@@ -396,9 +396,9 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
             </div>
 
             {/* Filter Metadata */}
-            <div className="flex items-center justify-between text-[11px] text-zinc-400 font-semibold pt-1">
-              <span>Filtro: <span className="text-violet-400 font-bold">{activeEventName}</span></span>
-              <span className="bg-zinc-900 border border-zinc-850 px-2 py-0.5 rounded-md text-zinc-350">
+            <div className="flex items-center justify-between text-[11px] text-brand-light-gray/80 font-semibold pt-1">
+              <span>Filtro: <span className="text-brand-sky font-bold">{activeEventName}</span></span>
+              <span className="bg-brand-navy/65 border border-brand-blue/30 px-2 py-0.5 rounded-md text-brand-light-gray">
                 {filteredRegistrations.length} inscritos
               </span>
             </div>
@@ -406,9 +406,9 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
 
           {/* Exporting Spinner overlay */}
           {isExporting && (
-            <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-4 flex items-center gap-3 animate-pulse">
-              <div className="w-4 h-4 rounded-full border-2 border-violet-400 border-t-transparent animate-spin" />
-              <p className="text-xs font-semibold text-violet-400">
+            <div className="rounded-2xl border border-brand-sky/30 bg-brand-sky/5 p-4 flex items-center gap-3 animate-pulse">
+              <div className="w-4 h-4 rounded-full border-2 border-brand-sky border-t-transparent animate-spin" />
+              <p className="text-xs font-semibold text-brand-sky">
                 Compilando reporte con columnas seleccionadas...
               </p>
             </div>
@@ -422,10 +422,10 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                 return (
                   <article
                     key={eventId}
-                    className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-900 flex flex-col gap-4 overflow-hidden"
+                    className="p-4 rounded-2xl bg-brand-dark/45 border border-brand-blue/30 flex flex-col gap-4 overflow-hidden"
                   >
                     {/* Collapsible Header Container */}
-                    <div className="flex flex-col gap-2.5 pb-2.5 border-b border-zinc-900 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-2.5 pb-2.5 border-b border-brand-blue/20 sm:flex-row sm:items-center sm:justify-between">
                       
                       {/* Collapsible Trigger Label (Chevron + Title) */}
                       <div
@@ -433,7 +433,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                         className="flex items-center gap-2.5 cursor-pointer select-none group/title flex-1 min-w-0"
                         title={isCollapsed ? "Desplegar tabla" : "Colapsar tabla"}
                       >
-                        <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-850 flex items-center justify-center group-hover/title:border-zinc-700 transition-colors shrink-0">
+                        <div className="p-1.5 rounded-lg bg-brand-navy/60 border border-brand-blue/20 flex items-center justify-center group-hover/title:border-zinc-700 transition-colors shrink-0">
                           <svg
                             className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ${
                               isCollapsed ? "-rotate-90" : "rotate-0"
@@ -446,7 +446,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                           </svg>
                         </div>
                         <div className="min-w-0">
-                          <span className="text-[9px] font-bold text-violet-400 uppercase tracking-widest block">
+                          <span className="text-[9px] font-bold text-brand-sky uppercase tracking-widest block">
                             Torneo / Categoría
                           </span>
                           <h3 className="text-sm font-black text-white tracking-tight leading-snug truncate group-hover/title:text-zinc-200 transition-colors">
@@ -457,7 +457,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                       
                       {/* Action buttons (Excel / PDF) */}
                       <div className="flex items-center gap-1.5 self-start sm:self-center">
-                        <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-zinc-900 border border-zinc-850 text-zinc-450 whitespace-nowrap">
+                        <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-brand-navy/60 border border-brand-blue/20 text-brand-sky/70 whitespace-nowrap">
                           {group.registrations.length} inscritos
                         </span>
                         
@@ -478,7 +478,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                         <button
                           onClick={() => handlePrintPDF(eventId)}
                           disabled={isExporting}
-                          className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none min-h-[30px]"
+                          className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-brand-sky bg-brand-sky/10 border border-brand-sky/20 hover:bg-brand-sky/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none min-h-[30px]"
                           title="Imprimir / Exportar este torneo a PDF"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -499,7 +499,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                       <div className="w-full overflow-x-auto scrollbar-none rounded-xl">
                         <table className="w-full text-left border-collapse min-w-[640px]">
                           <thead>
-                            <tr className="border-b border-zinc-900 text-[10px] font-bold uppercase tracking-wider text-zinc-550">
+                            <tr className="border-b border-brand-blue/20 text-[10px] font-bold uppercase tracking-wider text-brand-sky/60">
                               <th className="py-2.5 pl-1 w-8 text-center">Nº</th>
                               {visibleColumnKeys.includes("fullName") && <th className="py-2.5 pr-2">Participante</th>}
                               {visibleColumnKeys.includes("registerCode") && <th className="py-2.5 pr-2 font-mono">Registro/CU</th>}
@@ -513,8 +513,8 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                           </thead>
                           <tbody className="divide-y divide-zinc-900/60 text-xs">
                             {group.registrations.map((reg, idx) => (
-                              <tr key={reg.id} className="hover:bg-zinc-900/25 transition-colors">
-                                <td className="py-3 pl-1 text-center font-bold text-zinc-555">{idx + 1}</td>
+                              <tr key={reg.id} className="hover:bg-brand-blue/15 transition-colors">
+                                <td className="py-3 pl-1 text-center font-bold text-brand-sky/45">{idx + 1}</td>
                                 
                                 {visibleColumnKeys.includes("fullName") && (
                                   <td className="py-3 font-bold text-white pr-2 max-w-[140px] truncate" title={reg.participant.fullName}>
@@ -523,19 +523,19 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                                 )}
 
                                 {visibleColumnKeys.includes("registerCode") && (
-                                  <td className="py-3 font-mono text-zinc-350 pr-2 font-medium">
+                                  <td className="py-3 font-mono text-brand-light-gray/90 pr-2 font-medium">
                                     {reg.participant.registerCode}
                                   </td>
                                 )}
 
                                 {visibleColumnKeys.includes("email") && (
-                                  <td className="py-3 text-zinc-450 pr-2 max-w-[130px] truncate" title={reg.participant.email || ""}>
+                                  <td className="py-3 text-brand-sky/75 pr-2 max-w-[130px] truncate" title={reg.participant.email || ""}>
                                     {reg.participant.email || "-"}
                                   </td>
                                 )}
 
                                 {visibleColumnKeys.includes("phone") && (
-                                  <td className="py-3 text-zinc-400 pr-2 font-medium">
+                                  <td className="py-3 text-brand-light-gray pr-2 font-medium">
                                     {reg.participant.phone}
                                   </td>
                                 )}
@@ -543,7 +543,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                                 {visibleColumnKeys.includes("registrationType") && (
                                   <td className="py-3 text-center pr-2">
                                     {reg.teamId ? (
-                                      <span className="inline-block px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-violet-650/10 text-violet-400 border border-violet-500/20">
+                                      <span className="inline-block px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-brand-sky/15 text-brand-sky border border-brand-sky/25">
                                         Equipo
                                       </span>
                                     ) : (
@@ -559,22 +559,22 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                                     {reg.team ? (
                                       <div>
                                         <span className="text-zinc-200 font-bold line-clamp-1">{reg.team.name}</span>
-                                        <span className="block font-mono text-[9px] text-violet-400 tracking-wider mt-0.5">{reg.team.code}</span>
+                                        <span className="block font-mono text-[9px] text-brand-sky tracking-wider mt-0.5">{reg.team.code}</span>
                                       </div>
                                     ) : (
-                                      <span className="text-zinc-655">-</span>
+                                      <span className="text-brand-sky/45">-</span>
                                     )}
                                   </td>
                                 )}
 
                                 {visibleColumnKeys.includes("confirmationCode") && (
-                                  <td className="py-3 text-right font-mono text-zinc-500 pr-2">
+                                  <td className="py-3 text-right font-mono text-brand-sky/50 pr-2">
                                     {reg.confirmationCode}
                                   </td>
                                 )}
 
                                 {visibleColumnKeys.includes("date") && (
-                                  <td className="py-3 text-right text-zinc-550 whitespace-nowrap pr-1 font-mono">
+                                  <td className="py-3 text-right text-brand-sky/50 whitespace-nowrap pr-1 font-mono">
                                     {new Date(reg.createdAt).toLocaleDateString("es-ES", {
                                       day: "2-digit",
                                       month: "numeric",
@@ -591,14 +591,14 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                 );
               })
             ) : (
-              <div className="text-center py-12 rounded-2xl bg-zinc-950/40 border border-zinc-900">
-                <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 mx-auto mb-3">
-                  <svg className="w-5 h-5 text-zinc-555" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="text-center py-12 rounded-2xl bg-brand-dark/45 border border-brand-blue/30">
+                <div className="w-10 h-10 rounded-full bg-brand-navy/60 border border-brand-blue/30 flex items-center justify-center text-brand-sky/50 mx-auto mb-3">
+                  <svg className="w-5 h-5 text-brand-sky/45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
                 <h4 className="text-sm font-bold text-white">No se hallaron registros</h4>
-                <p className="text-xs text-zinc-500 mt-1 px-4">
+                <p className="text-xs text-brand-sky/50 mt-1 px-4">
                   Prueba cambiando los filtros de selección, las columnas visibles o la búsqueda.
                 </p>
               </div>
@@ -610,7 +610,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
         <div className="fixed bottom-6 right-6 z-50">
           <Link
             href="/"
-            className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/20 transition-all hover:scale-105 active:scale-95 border border-violet-500/30 min-h-[48px] min-w-[48px]"
+            className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-brand-blue to-brand-sky text-brand-navy shadow-lg shadow-brand-sky/20 transition-all hover:scale-105 active:scale-95 border border-brand-sky/30 min-h-[48px] min-w-[48px] font-bold"
             title="Ver catálogo público"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

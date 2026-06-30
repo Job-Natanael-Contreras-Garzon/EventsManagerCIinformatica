@@ -219,20 +219,20 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
   };
 
   return (
-    <div className="min-h-screen bg-black text-zinc-150 flex flex-col items-center pb-safe font-sans selection:bg-violet-650 selection:text-white">
+    <div className="min-h-screen bg-transparent text-brand-light-gray flex flex-col items-center pb-safe font-sans selection:bg-brand-sky selection:text-brand-navy">
       
       {/* Sticky Premium Header with Navigation for Admin Functions */}
-      <header className="sticky top-0 z-40 w-full max-w-lg bg-black/80 backdrop-blur-md border-b border-zinc-900 px-4 py-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+      <header className="sticky top-0 z-40 w-full max-w-lg bg-brand-navy/80 backdrop-blur-md border-b border-brand-blue/35 px-4 py-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-600 to-fuchsia-600 flex items-center justify-center font-bold text-sm text-white shadow-md shadow-violet-500/20">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-blue to-brand-sky flex items-center justify-center font-bold text-sm text-brand-navy shadow-md shadow-brand-sky/20">
               AD
             </div>
             <div>
               <h1 className="text-sm font-bold tracking-tight text-white leading-none">
                 Admin Panel
               </h1>
-              <span className="text-[10px] text-zinc-550 font-medium">
+              <span className="text-[10px] text-brand-sky/60 font-medium">
                 CI INGENIERÍA INFORMÁTICA
               </span>
             </div>
@@ -247,24 +247,23 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
             </Link>
           </div>
         </div>
-
-        <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-zinc-900 pt-2 sm:border-0 sm:pt-0">
+              <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-brand-blue/20 pt-2 sm:border-0 sm:pt-0">
           <nav className="flex items-center gap-2">
             <Link
               href="/admin/dashboard"
-              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent transition-all min-h-[32px] flex items-center"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
             >
               Dashboard
             </Link>
             <Link
               href="/admin/eventos"
-              className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 pointer-events-none"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-brand-sky bg-brand-sky/10 border border-brand-sky/20 pointer-events-none"
             >
               Eventos
             </Link>
             <Link
               href="/admin/registrados"
-              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-transparent transition-all min-h-[32px] flex items-center"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
             >
               Registrados
             </Link>
@@ -272,7 +271,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
           
           <Link
             href="/admin/login"
-            className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-455 hover:text-zinc-200 bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 active:scale-95 transition-all min-h-[32px]"
+            className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-white bg-brand-dark/65 border border-brand-blue/30 hover:bg-brand-blue/40 active:scale-95 transition-all min-h-[32px]"
           >
             Cerrar Sesión
           </Link>
@@ -285,7 +284,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
         {/* Title Area with "+ Nuevo" Button */}
         <section className="flex items-center justify-between gap-4">
           <div>
-            <span className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">
+            <span className="text-[10px] font-bold text-brand-sky uppercase tracking-widest">
               Configuración de Torneos
             </span>
             <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl">
@@ -295,7 +294,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
           
           <button
             onClick={handleNewEvent}
-            className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-violet-650 to-fuchsia-600 hover:brightness-110 active:scale-95 transition-all min-h-[40px] shadow-lg shadow-violet-600/15"
+            className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-bold text-brand-navy bg-brand-sky hover:bg-brand-sky/90 active:scale-95 transition-all min-h-[40px] shadow-lg shadow-brand-sky/20"
           >
             <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
@@ -315,22 +314,21 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
               const count = isTeam ? event._count.teams : event._count.registrations;
               const max = event.maxParticipants;
               const occupancyText = max ? `${count}/${max}` : `${count}/∞`;
-
               return (
                 <article
                   key={event.id}
-                  className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-900 flex items-center justify-between gap-4 hover:border-zinc-800 transition-all duration-150"
+                  className="p-4 rounded-2xl bg-brand-dark/45 border border-brand-blue/30 flex items-center justify-between gap-4 hover:border-brand-blue/45 transition-all duration-150"
                 >
                   <div className="flex-1 min-w-0 space-y-1.5">
                     {/* Badge line */}
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-navy/60 border border-brand-blue/30 text-brand-sky">
                         {event.category.name}
                       </span>
                       <span
                         className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
                           isTeam
-                            ? "bg-violet-500/10 border-violet-500/20 text-violet-400"
+                            ? "bg-brand-sky/15 border-brand-sky/25 text-brand-sky"
                             : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
                         }`}
                       >
@@ -354,8 +352,8 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                     </h3>
                     
                     {/* Occupancy details */}
-                    <p className="text-[11px] text-zinc-500">
-                      Ocupación: <span className="font-mono text-zinc-300 font-semibold">{occupancyText}</span> {isTeam ? "Equipos" : "Jugadores"}
+                    <p className="text-[11px] text-brand-sky/60">
+                      Ocupación: <span className="font-mono text-brand-light-gray font-semibold">{occupancyText}</span> {isTeam ? "Equipos" : "Jugadores"}
                     </p>
                   </div>
 
@@ -363,7 +361,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                   <div className="shrink-0 flex items-center gap-2">
                     <button
                       onClick={() => handleEditEvent(event)}
-                      className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 hover:bg-zinc-855 hover:border-zinc-700 active:scale-95 transition-all min-h-[36px]"
+                      className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-brand-light-gray hover:text-white bg-brand-blue/60 border border-brand-blue/30 hover:bg-brand-blue/80 hover:border-brand-blue/40 active:scale-95 transition-all min-h-[36px]"
                     >
                       Editar
                     </button>
@@ -390,15 +388,15 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
         <>
           {/* Backdrop overlay */}
           <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 transition-opacity"
+            className="fixed inset-0 bg-brand-navy/80 backdrop-blur-sm z-50 transition-opacity"
             onClick={() => setIsOpen(false)}
           />
 
           {/* Drawer sheet container */}
-          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-zinc-950 border-t border-zinc-900 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl transition-all duration-300 max-h-[88vh] overflow-y-auto flex flex-col">
+          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-navy border-t border-brand-blue/35 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl transition-all duration-300 max-h-[88vh] overflow-y-auto flex flex-col">
             
             {/* Top native drag bar */}
-            <div className="w-12 h-1 bg-zinc-850 rounded-full mx-auto mb-5 shrink-0" />
+            <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5 shrink-0" />
 
             {/* Header info */}
             <div className="mb-6 shrink-0 flex items-center justify-between">
@@ -406,13 +404,13 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                 <h3 className="text-lg font-black tracking-tight text-white">
                   {editingEvent ? "Editar Torneo" : "Crear Nuevo Torneo"}
                 </h3>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-brand-sky/60">
                   {editingEvent ? "Modifica la configuración de este torneo" : "Completa la ficha técnica del nuevo torneo"}
                 </p>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-850 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-full bg-brand-dark/60 border border-brand-blue/30 flex items-center justify-center text-brand-sky hover:text-white transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -433,7 +431,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
 
               {/* Título */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="name">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="name">
                   Título del Torneo
                 </label>
                 <input
@@ -441,7 +439,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                   type="text"
                   placeholder="Ej. Torneo de Valorant 5v5"
                   {...register("name")}
-                  className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                  className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
                 />
                 {errors.name && (
                   <p className="text-[10px] text-rose-500 font-semibold" role="alert">
@@ -452,7 +450,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
 
               {/* Descripción */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="description">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="description">
                   Descripción
                 </label>
                 <textarea
@@ -460,7 +458,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                   placeholder="Detalles sobre premios, modalidad, reglas..."
                   rows={3}
                   {...register("description")}
-                  className="w-full min-h-[80px] p-3.5 bg-zinc-900 border border-zinc-855 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                  className="w-full min-h-[80px] p-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
                 />
                 {errors.description && (
                   <p className="text-[10px] text-rose-500 font-semibold" role="alert">
@@ -474,13 +472,13 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                 
                 {/* Categoría */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="categoryId">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="categoryId">
                     Categoría
                   </label>
                   <select
                     id="categoryId"
                     {...register("categoryId")}
-                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all appearance-none"
+                    className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all appearance-none"
                   >
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
@@ -497,13 +495,13 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
 
                 {/* Tipo de Juego */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="type">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="type">
                     Tipo de Juego
                   </label>
                   <select
                     id="type"
                     {...register("type")}
-                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all appearance-none"
+                    className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all appearance-none"
                   >
                     <option value="INDIVIDUAL">Individual</option>
                     <option value="TEAM">En Equipo</option>
@@ -521,7 +519,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                 
                 {/* Máximo de cupos */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="maxParticipants">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="maxParticipants">
                     {selectedType === "TEAM" ? "Máximo de Equipos" : "Máximo de Cupos"}
                   </label>
                   <input
@@ -531,7 +529,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                     {...register("maxParticipants", {
                       setValueAs: (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
                     })}
-                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                    className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
                   />
                   {errors.maxParticipants && (
                     <p className="text-[10px] text-rose-500 font-semibold" role="alert">
@@ -543,7 +541,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                 {/* Integrantes por Equipo (Condicional) */}
                 {selectedType === "TEAM" && (
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="maxTeamMembers">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="maxTeamMembers">
                       Integrantes/Equipo
                     </label>
                     <input
@@ -553,7 +551,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                       {...register("maxTeamMembers", {
                         setValueAs: (v) => (v === "" || v === null || v === undefined ? 5 : Number(v)),
                       })}
-                      className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                      className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
                     />
                     {errors.maxTeamMembers && (
                       <p className="text-[10px] text-rose-500 font-semibold" role="alert">
@@ -565,7 +563,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
 
                 {/* Estado */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="isActive">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="isActive">
                     Inscripciones
                   </label>
                   <select
@@ -573,7 +571,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                     {...register("isActive", {
                       setValueAs: (val) => val === "true" || val === true,
                     })}
-                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all appearance-none"
+                    className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all appearance-none"
                   >
                     <option value="true">Abiertas</option>
                     <option value="false">Cerradas</option>
@@ -591,14 +589,14 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                 
                 {/* Fecha del evento */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="date">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="date">
                     Fecha del Evento
                   </label>
                   <input
                     id="date"
                     type="datetime-local"
                     {...register("date")}
-                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                    className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
                   />
                   {errors.date && (
                     <p className="text-[10px] text-rose-500 font-semibold" role="alert">
@@ -609,14 +607,14 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
 
                 {/* Límite de registro */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="registrationDeadline">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="registrationDeadline">
                     Límite Registro
                   </label>
                   <input
                     id="registrationDeadline"
                     type="datetime-local"
                     {...register("registrationDeadline")}
-                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                    className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
                   />
                   {errors.registrationDeadline && (
                     <p className="text-[10px] text-rose-500 font-semibold" role="alert">
@@ -630,7 +628,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
               <div className="grid grid-cols-2 gap-4">
                 {/* Nombre del Encargado */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="encargadoName">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="encargadoName">
                     Nombre del Encargado
                   </label>
                   <input
@@ -638,7 +636,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                     type="text"
                     placeholder="Ej. Juan Pérez"
                     {...register("encargadoName")}
-                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                    className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
                   />
                   {errors.encargadoName && (
                     <p className="text-[10px] text-rose-500 font-semibold" role="alert">
@@ -649,7 +647,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
 
                 {/* Celular del Encargado */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="encargadoPhone">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="encargadoPhone">
                     Celular del Encargado
                   </label>
                   <input
@@ -657,7 +655,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                     type="text"
                     placeholder="Ej. 70712345"
                     {...register("encargadoPhone")}
-                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                    className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
                   />
                   {errors.encargadoPhone && (
                     <p className="text-[10px] text-rose-500 font-semibold" role="alert">
@@ -681,14 +679,14 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center w-full min-h-[44px] rounded-xl bg-zinc-900 hover:bg-zinc-850 text-zinc-400 border border-zinc-850 text-sm font-semibold transition-all duration-150 active:scale-95"
+                  className="flex items-center justify-center w-full min-h-[44px] rounded-xl bg-brand-navy border border-brand-blue/30 text-brand-sky hover:bg-brand-navy/80 text-sm font-semibold transition-all duration-150 active:scale-95"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isPending || isSubmitting}
-                  className="flex items-center justify-center w-full min-h-[44px] rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-bold shadow-lg shadow-violet-600/15 transition-all duration-150 active:scale-95 hover:brightness-110 disabled:opacity-40 disabled:pointer-events-none"
+                  className="flex items-center justify-center w-full min-h-[44px] rounded-xl bg-brand-sky text-brand-navy text-sm font-bold shadow-lg shadow-brand-sky/20 transition-all duration-150 active:scale-95 hover:brightness-110 disabled:opacity-40 disabled:pointer-events-none"
                 >
                   {isPending || isSubmitting ? "Guardando..." : editingEvent ? "Guardar Cambios" : "Crear Torneo"}
                 </button>

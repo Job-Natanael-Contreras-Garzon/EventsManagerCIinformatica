@@ -70,7 +70,7 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
             placeholder="Buscar torneos o juegos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full min-h-[48px] pl-11 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-100 placeholder:text-zinc-500 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:border-transparent transition-all"
+            className="w-full min-h-[48px] pl-11 pr-4 py-2.5 bg-brand-navy/60 border border-brand-blue/45 rounded-xl text-brand-light-gray placeholder:text-brand-sky/40 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky focus-visible:border-transparent transition-all"
           />
           {searchQuery && (
             <button
@@ -92,8 +92,8 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
               className={cn(
                 "snap-start shrink-0 px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl border transition-all duration-150 active:scale-95 min-h-[36px]",
                 selectedCategory === null
-                  ? "bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-950/20"
-                  : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-300"
+                  ? "bg-brand-sky border-brand-sky text-brand-navy shadow-lg shadow-brand-navy/35 font-bold"
+                  : "bg-brand-dark/50 border-brand-blue/30 text-brand-sky hover:text-brand-light-gray"
               )}
             >
               Todos
@@ -105,8 +105,8 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
                 className={cn(
                   "snap-start shrink-0 px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl border transition-all duration-150 active:scale-95 min-h-[36px]",
                   selectedCategory === category
-                    ? "bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-950/20"
-                    : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-300"
+                    ? "bg-brand-sky border-brand-sky text-brand-navy shadow-lg shadow-brand-navy/35 font-bold"
+                    : "bg-brand-dark/50 border-brand-blue/30 text-brand-sky hover:text-brand-light-gray"
                 )}
               >
                 {category}
@@ -117,14 +117,14 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
       </div>
 
       {/* Team vs Individual Segmented Tabs */}
-      <div className="grid grid-cols-2 p-1 bg-zinc-950 border border-zinc-850 rounded-xl">
+      <div className="grid grid-cols-2 p-1 bg-brand-navy/80 border border-brand-blue/30 rounded-xl">
         <button
           onClick={() => handleTabChange("individual")}
           className={cn(
             "w-full py-3 rounded-lg text-sm font-semibold tracking-wide transition-all duration-150 active:scale-95 min-h-[44px]",
             activeTab === "individual"
-              ? "bg-zinc-900 text-white border border-zinc-800 shadow-md"
-              : "text-zinc-550 hover:text-zinc-300"
+              ? "bg-brand-blue text-white border border-brand-blue/40 shadow-md"
+              : "text-brand-sky/60 hover:text-brand-sky"
           )}
         >
           Individuales
@@ -134,8 +134,8 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
           className={cn(
             "w-full py-3 rounded-lg text-sm font-semibold tracking-wide transition-all duration-150 active:scale-95 min-h-[44px]",
             activeTab === "team"
-              ? "bg-zinc-900 text-white border border-zinc-800 shadow-md"
-              : "text-zinc-550 hover:text-zinc-300"
+              ? "bg-brand-blue text-white border border-brand-blue/40 shadow-md"
+              : "text-brand-sky/60 hover:text-brand-sky"
           )}
         >
           En Equipo
@@ -154,8 +154,8 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
           ))
         ) : (
           /* Elegant Empty State */
-          <div className="flex flex-col items-center justify-center py-12 px-4 border border-zinc-900 rounded-2xl bg-zinc-950/40 text-center">
-            <div className="w-16 h-16 rounded-full bg-zinc-900/60 border border-zinc-800 flex items-center justify-center text-zinc-500 mb-4">
+          <div className="flex flex-col items-center justify-center py-12 px-4 border border-brand-blue/20 rounded-2xl bg-brand-navy/40 text-center">
+            <div className="w-16 h-16 rounded-full bg-brand-dark/60 border border-brand-blue/30 flex items-center justify-center text-brand-sky mb-4">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -170,7 +170,7 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
                   setSearchQuery("");
                   setSelectedCategory(null);
                 }}
-                className="mt-4 px-4 py-2 text-xs font-semibold bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 hover:bg-zinc-800 transition-all active:scale-95"
+                className="mt-4 px-4 py-2 text-xs font-semibold bg-brand-blue/60 border border-brand-blue/30 rounded-xl text-brand-light-gray hover:bg-brand-blue transition-all active:scale-95"
               >
                 Restaurar filtros
               </button>
