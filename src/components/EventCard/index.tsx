@@ -4,7 +4,7 @@ import { cn } from "@/app/_components/utils";
 import type { EventCardProps } from "./types";
 import { getCategoryStyles } from "./variants";
 
-export function EventCard({ event, className }: EventCardProps) {
+export function EventCard({ event, className, onViewDetails }: EventCardProps) {
   const styles = getCategoryStyles(event.category.name);
   const now = new Date();
   const deadline = event.registrationDeadline ? new Date(event.registrationDeadline) : null;
@@ -51,10 +51,81 @@ export function EventCard({ event, className }: EventCardProps) {
   // Calculate spots left
   const spotsLeft = event.maxParticipants !== null ? event.maxParticipants - event.currentRegistrations : null;
 
+  if (event.imageBase64) {
+    return (
+      <article
+        onClick={onViewDetails}
+        className={cn(
+          "group relative flex flex-col justify-end w-full aspect-square min-h-[340px] rounded-2xl border border-brand-blue/30 overflow-hidden shadow-2xl transition-all duration-300 hover:border-brand-sky/40 hover:scale-[1.01] cursor-pointer",
+          styles.glow,
+          className
+        )}
+        style={{
+          backgroundImage: `url(data:image/webp;base64,${event.imageBase64})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Dark overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent z-0 transition-opacity duration-300 group-hover:via-black/50" />
+
+        {/* Content on top */}
+        <div className="relative z-10 p-5 flex flex-col justify-between h-full w-full">
+          {/* Top Row: Floating badges */}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span
+              className={cn(
+                "px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider bg-brand-navy/80 backdrop-blur-sm border-brand-blue/40",
+                styles.accent
+              )}
+            >
+              {event.category.name}
+            </span>
+            <span
+              className={cn(
+                "px-2 py-0.5 rounded-full text-[10px] font-bold border bg-black/60 backdrop-blur-sm",
+                statusClass
+              )}
+            >
+              {statusText}
+            </span>
+          </div>
+
+          {/* Bottom Row: Text and button */}
+          <div className="space-y-2 mt-auto">
+            <h3 className="text-lg font-black tracking-tight text-white line-clamp-2 drop-shadow-md">
+              {event.name}
+            </h3>
+            
+            <div className="flex flex-col gap-1 text-[11px] text-zinc-300 font-medium drop-shadow">
+              <span suppressHydrationWarning>{formattedEventDate}</span>
+              <span>
+                Inscritos: {event.currentRegistrations}
+                {event.maxParticipants !== null && ` / ${event.maxParticipants} max`}
+              </span>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                className="flex items-center justify-center gap-1.5 w-full min-h-[38px] py-1.5 px-3 rounded-xl text-xs font-bold transition-all duration-150 bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm border border-white/10 active:scale-95"
+              >
+                Ver detalles
+                <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <article
       className={cn(
-        "group relative flex flex-col justify-between w-full rounded-2xl border border-zinc-800 bg-zinc-950/60 p-5 shadow-2xl transition-all duration-300 hover:border-zinc-700 sm:p-6",
+        "group relative flex flex-col justify-between w-full rounded-2xl border border-brand-blue/30 bg-brand-dark/45 p-5 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:border-brand-sky/40 sm:p-6",
         styles.glow,
         className
       )}
@@ -93,7 +164,7 @@ export function EventCard({ event, className }: EventCardProps) {
         )}
 
         {/* Details Grid */}
-        <div className="mt-5 space-y-2.5 border-t border-zinc-900 pt-4 text-sm text-zinc-400">
+        <div className="mt-5 space-y-2.5 border-t border-brand-blue/20 pt-4 text-sm text-brand-light-gray/80">
           {/* Date */}
           <div className="flex items-center gap-2.5">
             <svg
@@ -185,18 +256,18 @@ export function EventCard({ event, className }: EventCardProps) {
 
         {/* Coordinadores / Encargados */}
         {event.encargados.length > 0 && (
-          <div className="mt-5 border-t border-zinc-900 pt-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+          <div className="mt-5 border-t border-brand-blue/20 pt-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-brand-sky/70">
               Coordinación
             </h4>
             <div className="mt-2.5 space-y-2">
               {event.encargados.map((enc) => (
                 <div
                   key={enc.id}
-                  className="flex items-center justify-between gap-2 rounded-xl bg-zinc-900/40 p-2 border border-zinc-800/60"
+                  className="flex items-center justify-between gap-2 rounded-xl bg-brand-navy/40 p-2 border border-brand-blue/30"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-semibold text-zinc-300">
+                    <div className="w-6 h-6 rounded-full bg-brand-blue/60 flex items-center justify-center text-xs font-semibold text-white">
                       {enc.name.charAt(0)}
                     </div>
                     <span className="text-sm font-medium text-zinc-300 line-clamp-1">
@@ -222,12 +293,12 @@ export function EventCard({ event, className }: EventCardProps) {
       </div>
 
       {/* Button CTA */}
-      <div className="mt-6 pt-4 border-t border-zinc-900">
+      <div className="mt-6 pt-4 border-t border-brand-blue/20">
         {isOpen ? (
           <Link
             href={`/registro?gameId=${event.id}`}
             className={cn(
-              "flex items-center justify-center w-full min-h-[48px] rounded-xl text-sm font-semibold transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950",
+              "flex items-center justify-center w-full min-h-[48px] rounded-xl text-sm font-bold transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy",
               styles.button
             )}
           >
@@ -236,7 +307,7 @@ export function EventCard({ event, className }: EventCardProps) {
         ) : (
           <button
             disabled
-            className="flex items-center justify-center w-full min-h-[48px] rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-500 text-sm font-semibold cursor-not-allowed"
+            className="flex items-center justify-center w-full min-h-[48px] rounded-xl bg-brand-dark/40 border border-brand-blue/30 text-brand-light-gray/40 text-sm font-semibold cursor-not-allowed"
           >
             {isDeadlinePassed
               ? "Inscripciones cerradas"

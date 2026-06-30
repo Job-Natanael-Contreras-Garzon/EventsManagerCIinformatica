@@ -62,6 +62,7 @@ export const eventSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal("")),
+  imageBase64: z.string().optional().nullable(),
 });
 
 /** Tipo inferido del schema de entrada */

@@ -4,6 +4,7 @@
 import { useState, useTransition } from "react";
 import { ActiveEvent } from "@/modules/registration/types/event.types";
 import { EventCard } from "@/components/EventCard";
+import { EventDetailModal } from "./EventDetailModal";
 import { cn } from "./utils";
 
 interface GameCatalogProps {
@@ -14,6 +15,7 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"individual" | "team">("individual");
+  const [selectedEvent, setSelectedEvent] = useState<ActiveEvent | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Get dynamic categories from initialEvents
@@ -144,7 +146,11 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
       <div className={cn("grid grid-cols-1 gap-5 transition-opacity duration-200", isPending ? "opacity-60" : "opacity-100")}>
         {filteredEvents.length > 0 ? (
           filteredEvents.map((event) => (
-            <EventCard key={event.id} event={event} />
+            <EventCard
+              key={event.id}
+              event={event}
+              onViewDetails={() => setSelectedEvent(event)}
+            />
           ))
         ) : (
           /* Elegant Empty State */
@@ -172,6 +178,11 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
           </div>
         )}
       </div>
+
+      <EventDetailModal
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+      />
     </div>
   );
 }

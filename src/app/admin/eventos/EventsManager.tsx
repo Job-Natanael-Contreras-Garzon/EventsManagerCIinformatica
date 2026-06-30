@@ -8,6 +8,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { eventSchema, type EventInput } from "@/modules/events/schema";
 import { upsertEvent, deleteEvent } from "@/modules/events/actions";
+import { uploadEventImage, removeEventImage } from "@/modules/events/upload-image-action";
+import { ImageUploadField } from "./ImageUploadField";
 
 interface Category {
   id: string;
@@ -24,6 +26,7 @@ interface EventData {
   registrationDeadline: Date | null;
   maxParticipants: number | null;
   maxTeamMembers: number;
+  imageBase64: string | null;
   categoryId: string;
   category: {
     name: string;
@@ -63,6 +66,9 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
   const [isPending, startTransition] = useTransition();
   const [generalError, setGeneralError] = useState<string | null>(null);
 
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [markedImageForDeletion, setMarkedImageForDeletion] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -80,6 +86,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       categoryId: categories[0]?.id || "",
       maxParticipants: null,
       maxTeamMembers: 5,
+      imageBase64: null,
       isActive: true,
       date: toDatetimeLocalString(new Date(Date.now() + 86400000)), // tomorrow
       registrationDeadline: "",
@@ -94,6 +101,8 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
   const handleNewEvent = () => {
     setEditingEvent(null);
     setGeneralError(null);
+    setSelectedImageFile(null);
+    setMarkedImageForDeletion(false);
     reset({
       name: "",
       description: "",
@@ -101,6 +110,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       categoryId: categories[0]?.id || "",
       maxParticipants: null,
       maxTeamMembers: 5,
+      imageBase64: null,
       isActive: true,
       date: toDatetimeLocalString(new Date(Date.now() + 86400000)),
       registrationDeadline: "",
@@ -114,6 +124,8 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
   const handleEditEvent = (event: EventData) => {
     setEditingEvent(event);
     setGeneralError(null);
+    setSelectedImageFile(null);
+    setMarkedImageForDeletion(false);
     
     const detectedType = event.type as "INDIVIDUAL" | "TEAM";
     const firstEncargado = event.encargados?.[0];
@@ -126,6 +138,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       categoryId: event.categoryId,
       maxParticipants: event.maxParticipants,
       maxTeamMembers: event.maxTeamMembers ?? 5,
+      imageBase64: event.imageBase64,
       isActive: event.isActive,
       date: toDatetimeLocalString(event.date),
       registrationDeadline: event.registrationDeadline ? toDatetimeLocalString(event.registrationDeadline) : "",
@@ -140,6 +153,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
   const onSubmit = (data: EventInput) => {
     setGeneralError(null);
     startTransition(async () => {
+      // Step 1: Save event data (metadata)
       const response = await upsertEvent(data);
 
       if (!response.success) {
@@ -154,9 +168,35 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
         return;
       }
 
+      const savedEventId = response.data?.id;
+
+      if (savedEventId) {
+        // Step 2: Handle image upload if a file was selected
+        if (selectedImageFile) {
+          const formData = new FormData();
+          formData.append("image", selectedImageFile);
+          
+          const uploadRes = await uploadEventImage(formData, savedEventId);
+          if (!uploadRes.success) {
+            setGeneralError(`El evento se guardó, pero hubo un problema con la imagen: ${uploadRes.error}`);
+            return;
+          }
+        } 
+        // Step 2b: Handle image deletion if user explicitly clicked remove
+        else if (markedImageForDeletion) {
+          const deleteRes = await removeEventImage(savedEventId);
+          if (!deleteRes.success) {
+            setGeneralError(`El evento se guardó, pero no se pudo eliminar la imagen anterior: ${deleteRes.error}`);
+            return;
+          }
+        }
+      }
+
       // Close and reset
       setIsOpen(false);
       setEditingEvent(null);
+      setSelectedImageFile(null);
+      setMarkedImageForDeletion(false);
       reset();
       router.refresh();
     });
@@ -625,6 +665,15 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                     </p>
                   )}
                 </div>
+              </div>
+
+              {/* Arte Promocional / Flyer */}
+              <div className="pt-2">
+                <ImageUploadField
+                  value={editingEvent?.imageBase64 || null}
+                  onChange={(file) => setSelectedImageFile(file)}
+                  onRemoveExisting={() => setMarkedImageForDeletion(true)}
+                />
               </div>
 
               {/* Submit Buttons */}

@@ -26,6 +26,7 @@ model Event {
   registrationDeadline DateTime?
   maxParticipants      Int?
   maxTeamMembers       Int            @default(5)
+  imageBase64          String?
   categoryId           String
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt

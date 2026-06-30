@@ -37,4 +37,6 @@ export interface ActiveEvent {
   currentRegistrations: number;
   /** Estado de activación del evento */
   isActive: boolean;
+  /** Imagen de portada del evento en formato Base64 */
+  imageBase64?: string | null;
 }

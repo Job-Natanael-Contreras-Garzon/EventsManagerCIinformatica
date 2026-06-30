@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
-  --foreground: #f4f4f5;
+  --background: #0e1693;
+  --foreground: #f0f0f0;
 }
 
 @theme inline {
@@ -10,10 +10,19 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular;
+
+  /* Brand Colors from Graphic Line */
+  --color-brand-navy: #0e1693;
+  --color-brand-dark: #094180;
+  --color-brand-blue: #1e4074;
+  --color-brand-sky: #70a0ff;
+  --color-brand-red: #e7191f;
+  --color-brand-light-gray: #f0f0f0;
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(circle at top, #094180 0%, #0e1693 50%, #040626 100%);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: hidden;

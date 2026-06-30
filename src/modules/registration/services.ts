@@ -44,6 +44,7 @@ export async function getActiveEvents(): Promise<ActiveEvent[]> {
       isActive: true,
       registrationDeadline: true,
       maxParticipants: true,
+      imageBase64: true,
       category: {
         select: {
           id: true,
@@ -75,6 +76,7 @@ export async function getActiveEvents(): Promise<ActiveEvent[]> {
     isActive: event.isActive,
     registrationDeadline: event.registrationDeadline?.toISOString() ?? null,
     maxParticipants: event.maxParticipants,
+    imageBase64: event.imageBase64,
     category: {
       id: event.category.id,
       name: event.category.name,
