@@ -10,13 +10,7 @@ export const metadata = {
   description: "Monitorea en tiempo real los registros, equipos creados y niveles de ocupación de los torneos activos.",
 };
 
-// Helper function to check if an event is team-based using keywords (same logic as main catalog)
-const isTeamEvent = (name: string, description?: string | null) => {
-  const n = name.toLowerCase();
-  const d = (description || "").toLowerCase();
-  const teamKeywords = ["5v5", "team", "equipo", "lol", "league of legends", "valorant", "futsal", "fútbol", "futbol"];
-  return teamKeywords.some(keyword => n.includes(keyword) || d.includes(keyword));
-};
+
 
 export default async function AdminDashboardPage() {
   const now = new Date();
@@ -37,6 +31,7 @@ export default async function AdminDashboardPage() {
         id: true,
         name: true,
         description: true,
+        type: true,
         maxParticipants: true,
         _count: {
           select: {
@@ -243,7 +238,7 @@ export default async function AdminDashboardPage() {
           <div className="space-y-4 pt-2">
             {activeEvents.length > 0 ? (
               activeEvents.map((event) => {
-                const isTeam = isTeamEvent(event.name, event.description);
+                const isTeam = event.type === "TEAM";
                 const current = isTeam ? event._count.teams : event._count.registrations;
                 const max = event.maxParticipants;
                 

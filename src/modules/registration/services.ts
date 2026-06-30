@@ -39,6 +39,7 @@ export async function getActiveEvents(): Promise<ActiveEvent[]> {
       id: true,
       name: true,
       description: true,
+      type: true,
       date: true,
       isActive: true,
       registrationDeadline: true,
@@ -59,7 +60,7 @@ export async function getActiveEvents(): Promise<ActiveEvent[]> {
         orderBy: { name: "asc" },
       },
       _count: {
-        select: { registrations: true },
+        select: { registrations: true, teams: true },
       },
     },
     orderBy: { date: "asc" },
@@ -69,6 +70,7 @@ export async function getActiveEvents(): Promise<ActiveEvent[]> {
     id: event.id,
     name: event.name,
     description: event.description,
+    type: event.type,
     date: event.date.toISOString(),
     isActive: event.isActive,
     registrationDeadline: event.registrationDeadline?.toISOString() ?? null,
@@ -83,7 +85,7 @@ export async function getActiveEvents(): Promise<ActiveEvent[]> {
       phone: enc.phone,
       whatsappUrl: enc.whatsappUrl,
     })),
-    currentRegistrations: event._count.registrations,
+    currentRegistrations: event.type === "TEAM" ? event._count.teams : event._count.registrations,
   }));
 }
 
@@ -114,9 +116,11 @@ export async function registerParticipant(
       id: true,
       name: true,
       isActive: true,
+      type: true,
+      maxTeamMembers: true,
       registrationDeadline: true,
       maxParticipants: true,
-      _count: { select: { registrations: true } },
+      _count: { select: { registrations: true, teams: true } },
     },
   });
 
@@ -132,14 +136,23 @@ export async function registerParticipant(
     throw new RegistrationError("La fecha límite de inscripción ha pasado.", "REGISTRATION_CLOSED");
   }
 
-  if (
-    event.maxParticipants !== null &&
-    event._count.registrations >= event.maxParticipants
-  ) {
-    throw new RegistrationError(
-      "Este evento ya alcanzó su capacidad máxima de participantes.",
-      "EVENT_FULL"
-    );
+  if (event.maxParticipants !== null) {
+    const isTeam = event.type === "TEAM";
+    if (isTeam) {
+      if (event._count.teams >= event.maxParticipants) {
+        throw new RegistrationError(
+          "Este evento ya alcanzó su capacidad máxima de equipos.",
+          "EVENT_FULL"
+        );
+      }
+    } else {
+      if (event._count.registrations >= event.maxParticipants) {
+        throw new RegistrationError(
+          "Este evento ya alcanzó su capacidad máxima de participantes.",
+          "EVENT_FULL"
+        );
+      }
+    }
   }
 
   // Si se une a un equipo existente, validar la existencia del equipo antes de la tx
@@ -167,9 +180,9 @@ export async function registerParticipant(
       );
     }
 
-    if (team._count.registrations >= MAX_TEAM_MEMBERS) {
+    if (team._count.registrations >= event.maxTeamMembers) {
       throw new RegistrationError(
-        `El equipo "${team.name}" ya está lleno (máximo ${MAX_TEAM_MEMBERS} integrantes).`,
+        `El equipo "${team.name}" ya está lleno (máximo ${event.maxTeamMembers} integrantes).`,
         "TEAM_FULL"
       );
     }
@@ -206,18 +219,29 @@ export async function registerParticipant(
       }
 
       // 2b. Re-verificar cupos del evento en la transacción para evitar race conditions
-      const currentEventRegistrations = await tx.registration.count({
-        where: { eventId: input.eventId },
-      });
-
-      if (
-        event.maxParticipants !== null &&
-        currentEventRegistrations >= event.maxParticipants
-      ) {
-        throw new RegistrationError(
-          "El evento ya no tiene cupos disponibles.",
-          "EVENT_FULL"
-        );
+      if (event.maxParticipants !== null) {
+        const isTeam = event.type === "TEAM";
+        if (isTeam) {
+          const currentEventTeams = await tx.team.count({
+            where: { eventId: input.eventId },
+          });
+          if (currentEventTeams >= event.maxParticipants) {
+            throw new RegistrationError(
+              "El evento ya no tiene cupos para más equipos disponibles.",
+              "EVENT_FULL"
+            );
+          }
+        } else {
+          const currentEventRegistrations = await tx.registration.count({
+            where: { eventId: input.eventId },
+          });
+          if (currentEventRegistrations >= event.maxParticipants) {
+            throw new RegistrationError(
+              "El evento ya no tiene cupos disponibles.",
+              "EVENT_FULL"
+            );
+          }
+        }
       }
 
       // 2c. Upsert del participante
@@ -268,9 +292,9 @@ export async function registerParticipant(
           where: { teamId: existingTeamCache.id },
         });
 
-        if (currentTeamMembers >= MAX_TEAM_MEMBERS) {
+        if (currentTeamMembers >= event.maxTeamMembers) {
           throw new RegistrationError(
-            `El equipo "${existingTeamCache.name}" ya está completo (máximo ${MAX_TEAM_MEMBERS} integrantes).`,
+            `El equipo "${existingTeamCache.name}" ya está completo (máximo ${event.maxTeamMembers} integrantes).`,
             "TEAM_FULL"
           );
         }

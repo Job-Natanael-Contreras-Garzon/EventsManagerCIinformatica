@@ -42,15 +42,59 @@ interface RegisteredListProps {
   events: EventInfo[];
 }
 
+interface ColumnOption {
+  key: string;
+  label: string;
+}
+
+const ALL_COLUMNS: ColumnOption[] = [
+  { key: "fullName", label: "Nombre" },
+  { key: "registerCode", label: "Código Univ." },
+  { key: "email", label: "Correo" },
+  { key: "phone", label: "Teléfono" },
+  { key: "registrationType", label: "Tipo" },
+  { key: "teamInfo", label: "Equipo" },
+  { key: "confirmationCode", label: "Cód. Confirmación" },
+  { key: "date", label: "Fecha" },
+];
+
 export function RegisteredList({ initialRegistrations, events }: RegisteredListProps) {
   const [selectedEvent, setSelectedEvent] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("Layout");
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [printingEventId, setPrintingEventId] = useState<string | null>(null);
 
   // Default search term should actually be empty, let's fix that
   useState(() => {
     setSearchTerm("");
   });
+
+  // Manage collapsed state for each tournament section
+  const [collapsedEventIds, setCollapsedEventIds] = useState<string[]>([]);
+
+  // Column visibility state: starts with essential columns visible
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState<string[]>([
+    "fullName",
+    "registerCode",
+    "email",
+    "phone",
+    "registrationType",
+    "teamInfo",
+  ]);
+
+  // Toggle collapse state for a tournament
+  const toggleCollapse = (eventId: string) => {
+    setCollapsedEventIds((prev) =>
+      prev.includes(eventId) ? prev.filter((id) => id !== eventId) : [...prev, eventId]
+    );
+  };
+
+  // Toggle a column key in the visible set
+  const toggleColumn = (key: string) => {
+    setVisibleColumnKeys((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
 
   // Filter registrations based on selected event and search term
   const filteredRegistrations = useMemo(() => {
@@ -72,45 +116,76 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
     });
   }, [initialRegistrations, selectedEvent, searchTerm]);
 
-  // Export filtered registrations to CSV (Excel compatible)
-  const handleExportCSV = async () => {
+  // Group filtered registrations by tournament to allow visualization "por evento"
+  const groupedRegistrations = useMemo(() => {
+    const groups: { [eventId: string]: { eventName: string; registrations: RegistrationData[] } } = {};
+    
+    filteredRegistrations.forEach((reg) => {
+      if (!groups[reg.eventId]) {
+        groups[reg.eventId] = {
+          eventName: reg.event.name,
+          registrations: [],
+        };
+      }
+      groups[reg.eventId].registrations.push(reg);
+    });
+
+    return groups;
+  }, [filteredRegistrations]);
+
+  // Export specific event registrations to CSV (Excel compatible)
+  const handleExportCSV = async (eventId: string, eventName: string) => {
     setIsExporting(true);
     // Simulate compilation delay for visual feedback
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     try {
-      const headers = [
-        "Nombre Completo",
-        "Correo Electrónico",
-        "Teléfono",
-        "Código Universitario",
-        "Torneo",
-        "Tipo de Registro",
-        "Nombre de Equipo",
-        "Código de Equipo",
-        "Código de Confirmación",
-        "Fecha de Registro",
-      ];
+      // Find active headers
+      const activeColumns = ALL_COLUMNS.filter((col) =>
+        visibleColumnKeys.includes(col.key)
+      );
+      const headers = activeColumns.map((col) => col.label);
 
-      const rows = filteredRegistrations.map((reg) => [
-        reg.participant.fullName,
-        reg.participant.email || "",
-        reg.participant.phone,
-        reg.participant.registerCode,
-        reg.event.name,
-        reg.teamId ? "Equipo" : "Individual",
-        reg.team?.name || "",
-        reg.team?.code || "",
-        reg.confirmationCode,
-        new Date(reg.createdAt).toLocaleDateString("es-ES"),
-      ]);
+      // Filter to just registrations belonging to the targeted event
+      const eventRegistrations = filteredRegistrations.filter((r) => r.eventId === eventId);
+
+      // Build rows dynamically based on visible columns
+      const rows = eventRegistrations.map((reg) => {
+        const rowData: string[] = [];
+        if (visibleColumnKeys.includes("fullName")) {
+          rowData.push(reg.participant.fullName);
+        }
+        if (visibleColumnKeys.includes("registerCode")) {
+          rowData.push(reg.participant.registerCode);
+        }
+        if (visibleColumnKeys.includes("email")) {
+          rowData.push(reg.participant.email || "");
+        }
+        if (visibleColumnKeys.includes("phone")) {
+          rowData.push(reg.participant.phone);
+        }
+        if (visibleColumnKeys.includes("registrationType")) {
+          rowData.push(reg.teamId ? "Equipo" : "Individual");
+        }
+        if (visibleColumnKeys.includes("teamInfo")) {
+          rowData.push(reg.team ? `${reg.team.name} (${reg.team.code})` : "-");
+        }
+        if (visibleColumnKeys.includes("confirmationCode")) {
+          rowData.push(reg.confirmationCode);
+        }
+        if (visibleColumnKeys.includes("date")) {
+          rowData.push(new Date(reg.createdAt).toLocaleDateString("es-ES"));
+        }
+        return rowData;
+      });
 
       const csvContent = [
-        headers.join(","),
+        "sep=;",
+        headers.join(";"),
         ...rows.map((row) =>
           row
             .map((val) => `"${String(val).replace(/"/g, '""')}"`)
-            .join(",")
+            .join(";")
         ),
       ].join("\n");
 
@@ -119,10 +194,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
       const url = URL.createObjectURL(blob);
       
       const link = document.createElement("a");
-      const eventObj = events.find((e) => e.id === selectedEvent);
-      const suffix = eventObj 
-        ? eventObj.name.toLowerCase().replace(/[^a-z0-9]+/g, "_") 
-        : "todos";
+      const suffix = eventName.toLowerCase().replace(/[^a-z0-9]+/g, "_");
       
       link.setAttribute("href", url);
       link.setAttribute("download", `inscritos_${suffix}.csv`);
@@ -136,9 +208,10 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
     }
   };
 
-  // Trigger print view (configured for native high-fidelity PDF export via window.print)
-  const handlePrintPDF = async () => {
+  // Trigger print view targeting only the clicked event
+  const handlePrintPDF = async (eventId: string) => {
     setIsExporting(true);
+    setPrintingEventId(eventId);
     // Let the spinner render before launching print dialog
     await new Promise((resolve) => setTimeout(resolve, 600));
     try {
@@ -146,9 +219,18 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
     } catch (error) {
       console.error("Print error", error);
     } finally {
+      setPrintingEventId(null);
       setIsExporting(false);
     }
   };
+
+  // Filter grouped items for the print-only document
+  const eventsToPrint = useMemo(() => {
+    if (printingEventId) {
+      return Object.entries(groupedRegistrations).filter(([id]) => id === printingEventId);
+    }
+    return Object.entries(groupedRegistrations);
+  }, [groupedRegistrations, printingEventId]);
 
   // Find current active event name for layout subtitles
   const activeEventName = useMemo(() => {
@@ -174,7 +256,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                 <h1 className="text-sm font-bold tracking-tight text-white leading-none">
                   Admin Panel
                 </h1>
-                <span className="text-[10px] text-zinc-550 font-medium uppercase">
+                <span className="text-[10px] text-zinc-555 font-medium uppercase">
                   CI INGENIERÍA INFORMÁTICA
                 </span>
               </div>
@@ -190,7 +272,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
             </div>
           </div>
 
-          {/* Admin Navigation Hub Links (correctly highlighting current view) */}
+          {/* Admin Navigation Hub Links */}
           <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-zinc-900 pt-2 sm:border-0 sm:pt-0">
             <nav className="flex items-center gap-2">
               <Link
@@ -225,41 +307,14 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
         {/* Main Console Content */}
         <main className="w-full max-w-lg px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
           
-          {/* Title Area and Export Toolbar */}
-          <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <span className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">
-                Base de Datos
-              </span>
-              <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl">
-                Participantes
-              </h2>
-            </div>
-
-            {/* Export Toolbar (Excel and PDF) */}
-            <div className="flex items-center gap-2 self-end sm:self-center">
-              <button
-                onClick={handleExportCSV}
-                disabled={isExporting}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none min-h-[40px]"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Excel</span>
-              </button>
-
-              <button
-                onClick={handlePrintPDF}
-                disabled={isExporting}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none min-h-[40px]"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                <span>PDF / Imprimir</span>
-              </button>
-            </div>
+          {/* Title Area */}
+          <section className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">
+              Base de Datos
+            </span>
+            <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl">
+              Participantes
+            </h2>
           </section>
 
           {/* Filtering Console */}
@@ -292,7 +347,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                 </div>
               </div>
 
-              {/* Text Search Input (Ad-hoc improvement for admin control) */}
+              {/* Text Search Input */}
               <div className="flex-1">
                 <label htmlFor="search-text" className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
                   Buscar Participante o Equipo
@@ -313,9 +368,34 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
                   </div>
                 </div>
               </div>
+
+              {/* Column Tags (Pills for showing/hiding columns) */}
+              <div className="space-y-2 pt-1">
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                  Columnas de Reporte (Tags)
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {ALL_COLUMNS.map((col) => {
+                    const isVisible = visibleColumnKeys.includes(col.key);
+                    return (
+                      <button
+                        key={col.key}
+                        onClick={() => toggleColumn(col.key)}
+                        className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer min-h-[30px] ${
+                          isVisible
+                            ? "text-violet-400 bg-violet-500/10 border border-violet-500/20"
+                            : "text-zinc-500 bg-zinc-900 border border-zinc-850 hover:text-zinc-400 hover:bg-zinc-850"
+                        }`}
+                      >
+                        {col.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
-            {/* Selected Count Indicator */}
+            {/* Filter Metadata */}
             <div className="flex items-center justify-between text-[11px] text-zinc-400 font-semibold pt-1">
               <span>Filtro: <span className="text-violet-400 font-bold">{activeEventName}</span></span>
               <span className="bg-zinc-900 border border-zinc-850 px-2 py-0.5 rounded-md text-zinc-350">
@@ -324,163 +404,202 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
             </div>
           </section>
 
-          {/* Export Loader Backdrop */}
+          {/* Exporting Spinner overlay */}
           {isExporting && (
             <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-4 flex items-center gap-3 animate-pulse">
               <div className="w-4 h-4 rounded-full border-2 border-violet-400 border-t-transparent animate-spin" />
               <p className="text-xs font-semibold text-violet-400">
-                Compilando reporte e iniciando descarga...
+                Compilando reporte con columnas seleccionadas...
               </p>
             </div>
           )}
 
-          {/* Registered List Container */}
-          <section className="flex flex-col gap-3">
-            {filteredRegistrations.length > 0 ? (
-              <>
-                {/* 1. Mobile Layout: Card-based UI (screen-only, hidden on sm+) */}
-                <div className="flex flex-col gap-3 sm:hidden">
-                  {filteredRegistrations.map((reg) => (
-                    <article
-                      key={reg.id}
-                      className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-900 flex flex-col gap-3 relative overflow-hidden group hover:border-zinc-850 transition-all duration-300"
-                    >
-                      {/* Event Banner */}
-                      <div className="flex items-center justify-between gap-2 pb-2 border-b border-zinc-900/60">
-                        <span className="text-[10px] font-bold text-zinc-400 truncate max-w-[200px]">
-                          {reg.event.name}
+          {/* Tables Grouped by Event */}
+          <section className="flex flex-col gap-6">
+            {Object.keys(groupedRegistrations).length > 0 ? (
+              Object.entries(groupedRegistrations).map(([eventId, group]) => {
+                const isCollapsed = collapsedEventIds.includes(eventId);
+                return (
+                  <article
+                    key={eventId}
+                    className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-900 flex flex-col gap-4 overflow-hidden"
+                  >
+                    {/* Collapsible Header Container */}
+                    <div className="flex flex-col gap-2.5 pb-2.5 border-b border-zinc-900 sm:flex-row sm:items-center sm:justify-between">
+                      
+                      {/* Collapsible Trigger Label (Chevron + Title) */}
+                      <div
+                        onClick={() => toggleCollapse(eventId)}
+                        className="flex items-center gap-2.5 cursor-pointer select-none group/title flex-1 min-w-0"
+                        title={isCollapsed ? "Desplegar tabla" : "Colapsar tabla"}
+                      >
+                        <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-850 flex items-center justify-center group-hover/title:border-zinc-700 transition-colors shrink-0">
+                          <svg
+                            className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ${
+                              isCollapsed ? "-rotate-90" : "rotate-0"
+                            }`}
+                            fill="none;;"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[9px] font-bold text-violet-400 uppercase tracking-widest block">
+                            Torneo / Categoría
+                          </span>
+                          <h3 className="text-sm font-black text-white tracking-tight leading-snug truncate group-hover/title:text-zinc-200 transition-colors">
+                            {group.eventName}
+                          </h3>
+                        </div>
+                      </div>
+                      
+                      {/* Action buttons (Excel / PDF) */}
+                      <div className="flex items-center gap-1.5 self-start sm:self-center">
+                        <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-zinc-900 border border-zinc-850 text-zinc-450 whitespace-nowrap">
+                          {group.registrations.length} inscritos
                         </span>
-                        {reg.teamId ? (
-                          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-violet-650/10 text-violet-400 border border-violet-500/20">
-                            Equipo
-                          </span>
-                        ) : (
-                          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            Individual
-                          </span>
-                        )}
+                        
+                        {/* Excel Button */}
+                        <button
+                          onClick={() => handleExportCSV(eventId, group.eventName)}
+                          disabled={isExporting}
+                          className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none min-h-[30px]"
+                          title="Exportar este torneo a Excel"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span>Excel</span>
+                        </button>
+
+                        {/* PDF Button */}
+                        <button
+                          onClick={() => handlePrintPDF(eventId)}
+                          disabled={isExporting}
+                          className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none min-h-[30px]"
+                          title="Imprimir / Exportar este torneo a PDF"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                          </svg>
+                          <span>PDF</span>
+                        </button>
                       </div>
+                    </div>
 
-                      {/* Participant Main Info */}
-                      <div className="space-y-1.5">
-                        <h4 className="text-sm font-extrabold text-white leading-none">
-                          {reg.participant.fullName}
-                        </h4>
-                        <p className="text-xs font-mono font-semibold text-zinc-400">
-                          CU: {reg.participant.registerCode}
-                        </p>
+                    {/* Table Body (collapsible wrapper) */}
+                    <div
+                      className={`transition-all duration-300 ease-in-out origin-top overflow-hidden ${
+                        isCollapsed ? "max-h-0 opacity-0 pointer-events-none" : "max-h-[1000px] opacity-100"
+                      }`}
+                    >
+                      {/* Horizontal scrollable table container for mobile adaptability */}
+                      <div className="w-full overflow-x-auto scrollbar-none rounded-xl">
+                        <table className="w-full text-left border-collapse min-w-[640px]">
+                          <thead>
+                            <tr className="border-b border-zinc-900 text-[10px] font-bold uppercase tracking-wider text-zinc-550">
+                              <th className="py-2.5 pl-1 w-8 text-center">Nº</th>
+                              {visibleColumnKeys.includes("fullName") && <th className="py-2.5 pr-2">Participante</th>}
+                              {visibleColumnKeys.includes("registerCode") && <th className="py-2.5 pr-2 font-mono">Registro/CU</th>}
+                              {visibleColumnKeys.includes("email") && <th className="py-2.5 pr-2">Correo</th>}
+                              {visibleColumnKeys.includes("phone") && <th className="py-2.5 pr-2">Teléfono</th>}
+                              {visibleColumnKeys.includes("registrationType") && <th className="py-2.5 text-center pr-2">Tipo</th>}
+                              {visibleColumnKeys.includes("teamInfo") && <th className="py-2.5 pr-2 text-right">Equipo / Código</th>}
+                              {visibleColumnKeys.includes("confirmationCode") && <th className="py-2.5 text-right font-mono pr-2">Cód. Conf.</th>}
+                              {visibleColumnKeys.includes("date") && <th className="py-2.5 text-right pr-1">Fecha</th>}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-zinc-900/60 text-xs">
+                            {group.registrations.map((reg, idx) => (
+                              <tr key={reg.id} className="hover:bg-zinc-900/25 transition-colors">
+                                <td className="py-3 pl-1 text-center font-bold text-zinc-555">{idx + 1}</td>
+                                
+                                {visibleColumnKeys.includes("fullName") && (
+                                  <td className="py-3 font-bold text-white pr-2 max-w-[140px] truncate" title={reg.participant.fullName}>
+                                    {reg.participant.fullName}
+                                  </td>
+                                )}
+
+                                {visibleColumnKeys.includes("registerCode") && (
+                                  <td className="py-3 font-mono text-zinc-350 pr-2 font-medium">
+                                    {reg.participant.registerCode}
+                                  </td>
+                                )}
+
+                                {visibleColumnKeys.includes("email") && (
+                                  <td className="py-3 text-zinc-450 pr-2 max-w-[130px] truncate" title={reg.participant.email || ""}>
+                                    {reg.participant.email || "-"}
+                                  </td>
+                                )}
+
+                                {visibleColumnKeys.includes("phone") && (
+                                  <td className="py-3 text-zinc-400 pr-2 font-medium">
+                                    {reg.participant.phone}
+                                  </td>
+                                )}
+
+                                {visibleColumnKeys.includes("registrationType") && (
+                                  <td className="py-3 text-center pr-2">
+                                    {reg.teamId ? (
+                                      <span className="inline-block px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-violet-650/10 text-violet-400 border border-violet-500/20">
+                                        Equipo
+                                      </span>
+                                    ) : (
+                                      <span className="inline-block px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        Indiv
+                                      </span>
+                                    )}
+                                  </td>
+                                )}
+
+                                {visibleColumnKeys.includes("teamInfo") && (
+                                  <td className="py-3 text-right pr-2 font-medium">
+                                    {reg.team ? (
+                                      <div>
+                                        <span className="text-zinc-200 font-bold line-clamp-1">{reg.team.name}</span>
+                                        <span className="block font-mono text-[9px] text-violet-400 tracking-wider mt-0.5">{reg.team.code}</span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-zinc-655">-</span>
+                                    )}
+                                  </td>
+                                )}
+
+                                {visibleColumnKeys.includes("confirmationCode") && (
+                                  <td className="py-3 text-right font-mono text-zinc-500 pr-2">
+                                    {reg.confirmationCode}
+                                  </td>
+                                )}
+
+                                {visibleColumnKeys.includes("date") && (
+                                  <td className="py-3 text-right text-zinc-550 whitespace-nowrap pr-1 font-mono">
+                                    {new Date(reg.createdAt).toLocaleDateString("es-ES", {
+                                      day: "2-digit",
+                                      month: "numeric",
+                                    })}
+                                  </td>
+                                )}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-
-                      {/* Contact Channels */}
-                      <div className="grid grid-cols-2 gap-2 text-[11px] text-zinc-500 font-medium">
-                        <div className="truncate">
-                          <span className="block text-[9px] font-bold text-zinc-600 uppercase">Correo</span>
-                          <span className="text-zinc-400">{reg.participant.email || "-"}</span>
-                        </div>
-                        <div>
-                          <span className="block text-[9px] font-bold text-zinc-600 uppercase">Teléfono</span>
-                          <span className="text-zinc-400">{reg.participant.phone}</span>
-                        </div>
-                      </div>
-
-                      {/* Team details if applicable */}
-                      {reg.team && (
-                        <div className="mt-1 p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-850/80 flex items-center justify-between text-xs">
-                          <div>
-                            <span className="block text-[9px] font-bold text-violet-400 uppercase tracking-wider">Equipo</span>
-                            <span className="font-bold text-zinc-300">{reg.team.name}</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="block text-[9px] font-bold text-violet-400 uppercase tracking-wider">Código</span>
-                            <span className="font-mono font-black text-white tracking-widest">{reg.team.code}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Confirmation Code Footnote */}
-                      <div className="mt-1 pt-2 border-t border-zinc-900/40 flex items-center justify-between text-[10px] text-zinc-500">
-                        <span>Cód: <span className="font-mono font-bold text-zinc-400">{reg.confirmationCode}</span></span>
-                        <span>{new Date(reg.createdAt).toLocaleDateString("es-ES")}</span>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-
-                {/* 2. Desktop Layout: Table View (screen-only, hidden on mobile) */}
-                <div className="hidden sm:block overflow-hidden rounded-2xl border border-zinc-900 bg-zinc-950/40 p-4">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="border-b border-zinc-900 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                        <th className="pb-3 pl-1">Participante</th>
-                        <th className="pb-3">Contacto</th>
-                        <th className="pb-3">Torneo</th>
-                        <th className="pb-3 text-center">Registro</th>
-                        <th className="pb-3 text-right">Equipo / Código</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-900/60 text-xs">
-                      {filteredRegistrations.map((reg) => (
-                        <tr key={reg.id} className="hover:bg-zinc-900/20 transition-colors">
-                          {/* Name & register code */}
-                          <td className="py-3.5 pl-1 pr-2">
-                            <div className="font-bold text-white leading-none">{reg.participant.fullName}</div>
-                            <span className="text-[10px] font-mono text-zinc-500 mt-1 block">CU: {reg.participant.registerCode}</span>
-                          </td>
-                          {/* Email & Phone */}
-                          <td className="py-3.5 pr-2 max-w-[120px]">
-                            <div className="text-zinc-350 truncate" title={reg.participant.email || ""}>
-                              {reg.participant.email || "-"}
-                            </div>
-                            <div className="text-[10px] text-zinc-500 mt-1">{reg.participant.phone}</div>
-                          </td>
-                          {/* Event name */}
-                          <td className="py-3.5 pr-2">
-                            <span className="line-clamp-2 text-zinc-400 font-medium leading-tight">
-                              {reg.event.name}
-                            </span>
-                          </td>
-                          {/* Type */}
-                          <td className="py-3.5 text-center">
-                            {reg.teamId ? (
-                              <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-violet-650/10 text-violet-400 border border-violet-500/20">
-                                Equipo
-                              </span>
-                            ) : (
-                              <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                Individual
-                              </span>
-                            )}
-                          </td>
-                          {/* Team Name / Confirmation Code */}
-                          <td className="py-3.5 text-right font-medium">
-                            {reg.team ? (
-                              <div>
-                                <div className="text-zinc-200 font-bold truncate max-w-[110px] inline-block">{reg.team.name}</div>
-                                <span className="block font-mono text-[10px] text-violet-400 tracking-wider mt-1">{reg.team.code}</span>
-                              </div>
-                            ) : (
-                              <div>
-                                <span className="text-zinc-600">-</span>
-                                <span className="block font-mono text-[9px] text-zinc-550 mt-1">Cód: {reg.confirmationCode}</span>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
+                    </div>
+                  </article>
+                );
+              })
             ) : (
               <div className="text-center py-12 rounded-2xl bg-zinc-950/40 border border-zinc-900">
                 <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 mx-auto mb-3">
-                  <svg className="w-5 h-5 text-zinc-550" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-zinc-555" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
                 <h4 className="text-sm font-bold text-white">No se hallaron registros</h4>
                 <p className="text-xs text-zinc-500 mt-1 px-4">
-                  Prueba cambiando los filtros de selección o la palabra de búsqueda.
+                  Prueba cambiando los filtros de selección, las columnas visibles o la búsqueda.
                 </p>
               </div>
             )}
@@ -506,7 +625,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
       {/* ──────────────────────────────────────────────────────── */}
       {/* B. PRINT ONLY VIEW: High Fidelity Letterhead and Table  */}
       {/* ──────────────────────────────────────────────────────── */}
-      <div className="hidden print:block w-full text-black bg-white font-sans text-xs p-2">
+      <div className="hidden print:block w-full text-black bg-white font-sans text-[10px] p-2">
         {/* Official Header / Letterhead */}
         <header className="border-b-2 border-black pb-4 mb-6 flex items-start justify-between w-full">
           <div>
@@ -533,66 +652,110 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
         {/* Filters Summary */}
         <section className="mb-4 bg-zinc-50 border border-zinc-200 p-3 rounded-lg flex items-center justify-between text-[11px]">
           <div>
-            <span className="font-bold text-zinc-700">Torneo Seleccionado: </span>
-            <span className="text-zinc-950 font-black">{activeEventName}</span>
+            <span className="font-bold text-zinc-700">Filtro de Reporte: </span>
+            <span className="text-zinc-950 font-black">{printingEventId ? events.find(e => e.id === printingEventId)?.name : activeEventName}</span>
           </div>
           <div>
             <span className="font-bold text-zinc-700">Total Participantes: </span>
-            <span className="text-zinc-950 font-black">{filteredRegistrations.length} registrados</span>
+            <span className="text-zinc-950 font-black">
+              {printingEventId 
+                ? (groupedRegistrations[printingEventId]?.registrations.length || 0)
+                : filteredRegistrations.length
+              } registrados
+            </span>
           </div>
         </section>
 
-        {/* Printable Data Table */}
-        <table className="w-full text-left border-collapse border border-zinc-300">
-          <thead>
-            <tr className="bg-zinc-100 border-b border-zinc-400 text-[10px] font-bold text-zinc-800 uppercase">
-              <th className="p-2 border-r border-zinc-300 w-8 text-center">Nº</th>
-              <th className="p-2 border-r border-zinc-300">Nombre Completo</th>
-              <th className="p-2 border-r border-zinc-300">Registro CU</th>
-              <th className="p-2 border-r border-zinc-300">Contacto</th>
-              <th className="p-2 border-r border-zinc-300">Torneo</th>
-              <th className="p-2 border-r border-zinc-300 text-center">Tipo</th>
-              <th className="p-2">Equipo (Código)</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-200 text-[10px] text-zinc-900">
-            {filteredRegistrations.length > 0 ? (
-              filteredRegistrations.map((reg, idx) => (
-                <tr key={reg.id} className="odd:bg-white even:bg-zinc-50/50">
-                  <td className="p-2 border-r border-zinc-200 text-center font-bold text-zinc-650">{idx + 1}</td>
-                  <td className="p-2 border-r border-zinc-200 font-extrabold">{reg.participant.fullName}</td>
-                  <td className="p-2 border-r border-zinc-200 font-mono font-bold">{reg.participant.registerCode}</td>
-                  <td className="p-2 border-r border-zinc-200 leading-tight">
-                    <div>{reg.participant.email || "-"}</div>
-                    <div className="text-[9px] text-zinc-500 font-mono mt-0.5">{reg.participant.phone}</div>
-                  </td>
-                  <td className="p-2 border-r border-zinc-200 leading-tight font-medium text-zinc-800">
-                    {reg.event.name}
-                  </td>
-                  <td className="p-2 border-r border-zinc-200 text-center font-bold">
-                    {reg.teamId ? "Equipo" : "Individual"}
-                  </td>
-                  <td className="p-2 font-semibold">
-                    {reg.team ? (
-                      <div>
-                        <span>{reg.team.name}</span>
-                        <span className="font-mono text-zinc-500 text-[9px] block">Cód: {reg.team.code}</span>
-                      </div>
-                    ) : (
-                      <span className="text-zinc-400 font-normal">-</span>
-                    )}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={7} className="p-6 text-center text-zinc-550 font-bold">
-                  No se registran participantes bajo los filtros actuales.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        {/* Dynamic tables grouped by event for high-fidelity printing */}
+        <div className="space-y-8">
+          {eventsToPrint.length > 0 ? (
+            eventsToPrint.map(([eventId, group]) => (
+              <div key={eventId} className="space-y-2.5 page-break-inside-avoid">
+                {/* Event printed subtitle */}
+                <div className="border-b border-black pb-1.5 flex justify-between items-baseline">
+                  <h3 className="text-xs font-extrabold text-black uppercase">
+                    {group.eventName}
+                  </h3>
+                  <span className="text-[9px] font-bold text-zinc-550">
+                    {group.registrations.length} registrados
+                  </span>
+                </div>
+
+                <table className="w-full text-left border-collapse border border-zinc-300">
+                  <thead>
+                    <tr className="bg-zinc-100 border-b border-zinc-400 text-[9px] font-bold text-zinc-800 uppercase">
+                      <th className="p-2 border-r border-zinc-300 w-8 text-center">Nº</th>
+                      {visibleColumnKeys.includes("fullName") && <th className="p-2 border-r border-zinc-300">Nombre Completo</th>}
+                      {visibleColumnKeys.includes("registerCode") && <th className="p-2 border-r border-zinc-300">Registro CU</th>}
+                      {visibleColumnKeys.includes("email") && <th className="p-2 border-r border-zinc-300">Correo</th>}
+                      {visibleColumnKeys.includes("phone") && <th className="p-2 border-r border-zinc-300">Teléfono</th>}
+                      {visibleColumnKeys.includes("registrationType") && <th className="p-2 border-r border-zinc-300 text-center">Tipo</th>}
+                      {visibleColumnKeys.includes("teamInfo") && <th className="p-2 border-r border-zinc-300">Equipo (Código)</th>}
+                      {visibleColumnKeys.includes("confirmationCode") && <th className="p-2 border-r border-zinc-300 text-right">Confirmación</th>}
+                      {visibleColumnKeys.includes("date") && <th className="p-2 text-right">Fecha</th>}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200 text-[9px] text-zinc-900">
+                    {group.registrations.map((reg, idx) => (
+                      <tr key={reg.id} className="odd:bg-white even:bg-zinc-50/50">
+                        <td className="p-2 border-r border-zinc-200 text-center font-bold text-zinc-500">{idx + 1}</td>
+                        
+                        {visibleColumnKeys.includes("fullName") && (
+                          <td className="p-2 border-r border-zinc-200 font-extrabold">{reg.participant.fullName}</td>
+                        )}
+
+                        {visibleColumnKeys.includes("registerCode") && (
+                          <td className="p-2 border-r border-zinc-200 font-mono font-bold">{reg.participant.registerCode}</td>
+                        )}
+
+                        {visibleColumnKeys.includes("email") && (
+                          <td className="p-2 border-r border-zinc-200">{reg.participant.email || "-"}</td>
+                        )}
+
+                        {visibleColumnKeys.includes("phone") && (
+                          <td className="p-2 border-r border-zinc-200 font-mono">{reg.participant.phone}</td>
+                        )}
+
+                        {visibleColumnKeys.includes("registrationType") && (
+                          <td className="p-2 border-r border-zinc-200 text-center font-bold">
+                            {reg.teamId ? "Equipo" : "Indiv"}
+                          </td>
+                        )}
+
+                        {visibleColumnKeys.includes("teamInfo") && (
+                          <td className="p-2 border-r border-zinc-200">
+                            {reg.team ? (
+                              <div>
+                                <span className="font-bold">{reg.team.name}</span>
+                                <span className="font-mono text-zinc-555 text-[8px] block">Cód: {reg.team.code}</span>
+                              </div>
+                            ) : (
+                              <span className="text-zinc-400">-</span>
+                            )}
+                          </td>
+                        )}
+
+                        {visibleColumnKeys.includes("confirmationCode") && (
+                          <td className="p-2 border-r border-zinc-200 text-right font-mono font-medium">{reg.confirmationCode}</td>
+                        )}
+
+                        {visibleColumnKeys.includes("date") && (
+                          <td className="p-2 text-right font-mono">
+                            {new Date(reg.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" })}
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))
+          ) : (
+            <div className="p-6 text-center text-zinc-550 font-bold border border-zinc-300">
+              No se registran participantes bajo los filtros actuales.
+            </div>
+          )}
+        </div>
 
         {/* Printable Footer */}
         <footer className="mt-12 pt-4 border-t border-dotted border-zinc-300 text-center text-[9px] text-zinc-450">

@@ -5,6 +5,7 @@ import { useState, useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { eventSchema, type EventInput } from "@/modules/events/schema";
 import { upsertEvent, deleteEvent } from "@/modules/events/actions";
 
@@ -17,14 +18,22 @@ interface EventData {
   id: string;
   name: string;
   description: string | null;
+  type: string;
   date: Date;
   isActive: boolean;
   registrationDeadline: Date | null;
   maxParticipants: number | null;
+  maxTeamMembers: number;
   categoryId: string;
   category: {
     name: string;
   };
+  encargados?: {
+    id: string;
+    name: string;
+    phone: string;
+    whatsappUrl: string;
+  }[];
   _count: {
     registrations: number;
     teams: number;
@@ -36,13 +45,7 @@ interface EventsManagerProps {
   categories: Category[];
 }
 
-// Helper to determine type based on name/description keywords
-const getEventTypeName = (name: string, description?: string | null): "TEAM" | "INDIVIDUAL" => {
-  const n = name.toLowerCase();
-  const d = (description || "").toLowerCase();
-  const teamKeywords = ["5v5", "team", "equipo", "lol", "league of legends", "valorant", "futsal", "fútbol", "futbol"];
-  return teamKeywords.some(keyword => n.includes(keyword) || d.includes(keyword)) ? "TEAM" : "INDIVIDUAL";
-};
+
 
 // Helper for date formatting in datetime-local inputs (timezone-safe)
 function toDatetimeLocalString(date: Date | string | null | undefined): string {
@@ -54,6 +57,7 @@ function toDatetimeLocalString(date: Date | string | null | undefined): string {
 }
 
 export function EventsManager({ initialEvents, categories }: EventsManagerProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -66,6 +70,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
     reset,
     formState: { errors, isSubmitting },
     setError,
+    watch,
   } = useForm<EventInput>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
@@ -74,11 +79,16 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       type: "INDIVIDUAL",
       categoryId: categories[0]?.id || "",
       maxParticipants: null,
+      maxTeamMembers: 5,
       isActive: true,
       date: toDatetimeLocalString(new Date(Date.now() + 86400000)), // tomorrow
       registrationDeadline: "",
+      encargadoName: "",
+      encargadoPhone: "",
     },
   });
+
+  const selectedType = watch("type");
 
   // Handle open for creating new event
   const handleNewEvent = () => {
@@ -90,9 +100,12 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       type: "INDIVIDUAL",
       categoryId: categories[0]?.id || "",
       maxParticipants: null,
+      maxTeamMembers: 5,
       isActive: true,
       date: toDatetimeLocalString(new Date(Date.now() + 86400000)),
       registrationDeadline: "",
+      encargadoName: "",
+      encargadoPhone: "",
     });
     setIsOpen(true);
   };
@@ -102,7 +115,8 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
     setEditingEvent(event);
     setGeneralError(null);
     
-    const detectedType = getEventTypeName(event.name, event.description);
+    const detectedType = event.type as "INDIVIDUAL" | "TEAM";
+    const firstEncargado = event.encargados?.[0];
     
     reset({
       id: event.id,
@@ -111,9 +125,14 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       type: detectedType,
       categoryId: event.categoryId,
       maxParticipants: event.maxParticipants,
+      maxTeamMembers: event.maxTeamMembers ?? 5,
       isActive: event.isActive,
       date: toDatetimeLocalString(event.date),
       registrationDeadline: event.registrationDeadline ? toDatetimeLocalString(event.registrationDeadline) : "",
+      encargadoName: firstEncargado?.name || "",
+      encargadoPhone: firstEncargado?.phone
+        ? (firstEncargado.phone.startsWith("591") ? firstEncargado.phone.slice(3) : firstEncargado.phone)
+        : "",
     });
     setIsOpen(true);
   };
@@ -139,6 +158,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       setIsOpen(false);
       setEditingEvent(null);
       reset();
+      router.refresh();
     });
   };
 
@@ -152,6 +172,8 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       const response = await deleteEvent(id);
       if (!response.success) {
         alert(response.error || "Ocurrió un error al intentar eliminar el torneo.");
+      } else {
+        router.refresh();
       }
     });
   };
@@ -246,7 +268,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
         <section className="flex flex-col gap-3">
           {initialEvents.length > 0 ? (
             initialEvents.map((event) => {
-              const type = getEventTypeName(event.name, event.description);
+              const type = event.type;
               const isTeam = type === "TEAM";
               
               // Count current registrations
@@ -360,6 +382,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
 
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 flex-1">
+              <input type="hidden" {...register("id")} />
               
               {/* General action errors */}
               {generalError && (
@@ -454,18 +477,20 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
               </div>
 
               {/* Cupos y Estado */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`grid gap-4 ${selectedType === "TEAM" ? "grid-cols-3" : "grid-cols-2"}`}>
                 
                 {/* Máximo de cupos */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="maxParticipants">
-                    Máximo de Cupos
+                    {selectedType === "TEAM" ? "Máximo de Equipos" : "Máximo de Cupos"}
                   </label>
                   <input
                     id="maxParticipants"
                     type="number"
                     placeholder="Ej. 16 (vacío = ∞)"
-                    {...register("maxParticipants")}
+                    {...register("maxParticipants", {
+                      setValueAs: (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
+                    })}
                     className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
                   />
                   {errors.maxParticipants && (
@@ -474,6 +499,29 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                     </p>
                   )}
                 </div>
+
+                {/* Integrantes por Equipo (Condicional) */}
+                {selectedType === "TEAM" && (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="maxTeamMembers">
+                      Integrantes/Equipo
+                    </label>
+                    <input
+                      id="maxTeamMembers"
+                      type="number"
+                      placeholder="Ej. 5"
+                      {...register("maxTeamMembers", {
+                        setValueAs: (v) => (v === "" || v === null || v === undefined ? 5 : Number(v)),
+                      })}
+                      className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                    />
+                    {errors.maxTeamMembers && (
+                      <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                        {errors.maxTeamMembers.message}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Estado */}
                 <div className="space-y-1.5">
@@ -533,6 +581,47 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                   {errors.registrationDeadline && (
                     <p className="text-[10px] text-rose-500 font-semibold" role="alert">
                       {errors.registrationDeadline.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Encargado del Torneo */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Nombre del Encargado */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="encargadoName">
+                    Nombre del Encargado
+                  </label>
+                  <input
+                    id="encargadoName"
+                    type="text"
+                    placeholder="Ej. Juan Pérez"
+                    {...register("encargadoName")}
+                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                  />
+                  {errors.encargadoName && (
+                    <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                      {errors.encargadoName.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Celular del Encargado */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400" htmlFor="encargadoPhone">
+                    Celular del Encargado
+                  </label>
+                  <input
+                    id="encargadoPhone"
+                    type="text"
+                    placeholder="Ej. 70712345"
+                    {...register("encargadoPhone")}
+                    className="w-full min-h-[44px] px-3.5 bg-zinc-900 border border-zinc-850 rounded-xl text-zinc-200 placeholder:text-zinc-500 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all"
+                  />
+                  {errors.encargadoPhone && (
+                    <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                      {errors.encargadoPhone.message}
                     </p>
                   )}
                 </div>

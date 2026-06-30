@@ -24,6 +24,7 @@ export interface ActiveEvent {
   id: string;
   name: string;
   description: string | null;
+  type: string;
   date: string; // ISO 8601 string (serializable para Server → Client boundary)
   registrationDeadline: string | null;
   maxParticipants: number | null;

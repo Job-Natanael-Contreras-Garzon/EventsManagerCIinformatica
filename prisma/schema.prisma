@@ -20,10 +20,12 @@ model Event {
   id                   String         @id @default(uuid())
   name                 String
   description          String?
+  type                 String         @default("INDIVIDUAL")
   date                 DateTime
   isActive             Boolean        @default(true)
   registrationDeadline DateTime?
   maxParticipants      Int?
+  maxTeamMembers       Int            @default(5)
   categoryId           String
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt

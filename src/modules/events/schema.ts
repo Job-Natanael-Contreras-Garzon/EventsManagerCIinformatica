@@ -7,7 +7,11 @@
 import { z } from "zod";
 
 export const eventSchema = z.object({
-  id: z.string().uuid("El identificador del evento no es válido.").optional(),
+  id: z
+    .string()
+    .uuid("El identificador del evento no es válido.")
+    .optional()
+    .or(z.literal("")),
   name: z
     .string()
     .min(3, "El título debe tener al menos 3 caracteres.")
@@ -30,12 +34,31 @@ export const eventSchema = z.object({
     .min(1, "El cupo mínimo debe ser al menos 1.")
     .nullable()
     .optional(),
+  maxTeamMembers: z
+    .number({
+      message: "Debe ser un número.",
+    })
+    .int("Debe ser un número entero.")
+    .min(1, "El número de integrantes mínimo debe ser al menos 1.")
+    .optional(),
   isActive: z.boolean({
     message: "El estado es requerido.",
   }),
   date: z.string().min(1, "La fecha del evento es requerida."),
   registrationDeadline: z
     .string()
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  encargadoName: z
+    .string()
+    .max(100, "El nombre del encargado no puede superar 100 caracteres.")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  encargadoPhone: z
+    .string()
+    .max(20, "El celular del encargado no puede superar 20 caracteres.")
     .optional()
     .nullable()
     .or(z.literal("")),

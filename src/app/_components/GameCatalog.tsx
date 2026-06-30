@@ -16,14 +16,6 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
   const [activeTab, setActiveTab] = useState<"individual" | "team">("individual");
   const [isPending, startTransition] = useTransition();
 
-  // Helper to identify team events based on name/description keywords
-  const isTeamEvent = (event: ActiveEvent) => {
-    const name = event.name.toLowerCase();
-    const desc = (event.description || "").toLowerCase();
-    const teamKeywords = ["5v5", "team", "equipo", "lol", "league of legends", "valorant", "futsal", "fútbol", "futbol"];
-    return teamKeywords.some(keyword => name.includes(keyword) || desc.includes(keyword));
-  };
-
   // Get dynamic categories from initialEvents
   const categories = Array.from(
     new Set(initialEvents.map((event) => event.category.name))
@@ -39,7 +31,7 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
   // Filter events based on active tab, search query, and category
   const filteredEvents = initialEvents.filter((event) => {
     // 1. Filter by Tab (Individual vs Team)
-    const isTeam = isTeamEvent(event);
+    const isTeam = event.type === "TEAM";
     if (activeTab === "individual" && isTeam) return false;
     if (activeTab === "team" && !isTeam) return false;
 

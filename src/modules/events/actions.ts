@@ -61,6 +61,7 @@ export async function upsertEvent(
         select: {
           name: true,
           description: true,
+          type: true,
           _count: {
             select: { registrations: true, teams: true },
           },
@@ -75,7 +76,7 @@ export async function upsertEvent(
       }
 
       // Validar si el evento pre-existente era de equipo
-      const wasTeam = isTeamEvent(existingEvent.name, existingEvent.description);
+      const wasTeam = existingEvent.type === "TEAM";
       const currentCount = wasTeam
         ? existingEvent._count.teams
         : existingEvent._count.registrations;
@@ -99,11 +100,19 @@ export async function upsertEvent(
 
     // ── Paso 3: Asegurar coincidencia de tipo (INDIVIDUAL vs TEAM) ────────
     const isTeam = validatedInput.type === "TEAM";
-    const hasTeamKeyword = isTeamEvent(finalName, finalDescription);
 
-    if (isTeam && !hasTeamKeyword) {
-      // Si el administrador selecciona TEAM pero el título no refleja equipo, lo decoramos
-      finalName = `${finalName} [Equipo]`;
+    if (!isTeam) {
+      // If changed to INDIVIDUAL, clean up automatic team suffixes
+      finalName = finalName
+        .replace(/\s*\[equipo\]\s*/i, "")
+        .replace(/\s*\[team\]\s*/i, "")
+        .replace(/\s*\[equipos\]\s*/i, "");
+    } else {
+      const hasTeamKeyword = isTeamEvent(finalName, finalDescription);
+      if (!hasTeamKeyword) {
+        // If team type but no keywords in name/desc, append [Equipo]
+        finalName = `${finalName} [Equipo]`;
+      }
     }
 
     const eventDate = new Date(validatedInput.date);
@@ -111,20 +120,77 @@ export async function upsertEvent(
       ? new Date(validatedInput.registrationDeadline)
       : null;
 
+    // Helper to format phone and generate direct Whatsapp link
+    const formatPhoneAndWhatsapp = (rawPhone: string) => {
+      const cleanPhone = rawPhone.replace(/[\s\-\(\)\+]/g, "");
+      if (!cleanPhone) return { phone: "", whatsappUrl: "" };
+      let phone = cleanPhone;
+      // Prepend Bolivia code if it has 8 digits starting with 6 or 7
+      if (cleanPhone.length === 8 && (cleanPhone.startsWith("6") || cleanPhone.startsWith("7"))) {
+        phone = `591${cleanPhone}`;
+      }
+      return {
+        phone,
+        whatsappUrl: `https://wa.me/${phone}`,
+      };
+    };
+
     let savedEvent;
+
+    // Prepare coordinator nested data if provided
+    const encargadoData = validatedInput.encargadoName && validatedInput.encargadoPhone
+      ? {
+          create: [
+            {
+              name: validatedInput.encargadoName,
+              ...formatPhoneAndWhatsapp(validatedInput.encargadoPhone),
+            },
+          ],
+        }
+      : undefined;
 
     // ── Paso 4: Guardar en la Base de Datos ───────────────────────────────
     if (validatedInput.id) {
+      // Clear existing encargados associated with this event to prevent duplicates
+      await db.encargado.deleteMany({
+        where: { eventId: validatedInput.id },
+      });
+
+      // Handle transitioning from TEAM to INDIVIDUAL (Clean up registrations & teams)
+      const existingEvent = await db.event.findUnique({
+        where: { id: validatedInput.id },
+        select: { type: true },
+      });
+      const wasTeam = existingEvent?.type === "TEAM";
+      const isTeam = validatedInput.type === "TEAM";
+
+      if (wasTeam && !isTeam) {
+        await db.$transaction(async (tx) => {
+          // Set teamId = null for registrations in this event
+          await tx.registration.updateMany({
+            where: { eventId: validatedInput.id },
+            data: { teamId: null },
+          });
+          // Delete teams for this event
+          await tx.team.deleteMany({
+            where: { eventId: validatedInput.id },
+          });
+        });
+      }
+
       savedEvent = await db.event.update({
         where: { id: validatedInput.id },
         data: {
           name: finalName,
           description: finalDescription,
+          type: validatedInput.type,
           maxParticipants: validatedInput.maxParticipants,
+          maxTeamMembers: validatedInput.maxTeamMembers ?? 5,
           isActive: validatedInput.isActive,
           categoryId: validatedInput.categoryId,
           date: eventDate,
           registrationDeadline: registrationDeadline,
+          encargados: encargadoData,
         },
         select: { id: true },
       });
@@ -133,11 +199,14 @@ export async function upsertEvent(
         data: {
           name: finalName,
           description: finalDescription,
+          type: validatedInput.type,
           maxParticipants: validatedInput.maxParticipants,
+          maxTeamMembers: validatedInput.maxTeamMembers ?? 5,
           isActive: validatedInput.isActive,
           categoryId: validatedInput.categoryId,
           date: eventDate,
           registrationDeadline: registrationDeadline,
+          encargados: encargadoData,
         },
         select: { id: true },
       });

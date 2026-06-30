@@ -23,6 +23,14 @@ export default async function AdminEventosPage() {
             name: true,
           },
         },
+        encargados: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            whatsappUrl: true,
+          },
+        },
         _count: {
           select: {
             registrations: true,
