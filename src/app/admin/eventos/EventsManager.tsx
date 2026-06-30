@@ -60,6 +60,11 @@ function toDatetimeLocalString(date: Date | string | null | undefined): string {
 }
 
 export function EventsManager({ initialEvents, categories }: EventsManagerProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventData | null>(null);
@@ -217,6 +222,12 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       }
     });
   };
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-transparent text-brand-light-gray flex flex-col items-center pb-safe font-sans" />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-transparent text-brand-light-gray flex flex-col items-center pb-safe font-sans selection:bg-brand-sky selection:text-brand-navy">

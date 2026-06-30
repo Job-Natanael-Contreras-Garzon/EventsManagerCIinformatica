@@ -1,7 +1,7 @@
 // src/app/admin/registrados/RegisteredList.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 
 interface EventInfo {
@@ -59,6 +59,11 @@ const ALL_COLUMNS: ColumnOption[] = [
 ];
 
 export function RegisteredList({ initialRegistrations, events }: RegisteredListProps) {
+  const [mounted, setMounted] = useState<boolean>(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [selectedEvent, setSelectedEvent] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("Layout");
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -237,6 +242,12 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
     if (selectedEvent === "all") return "Todos los Torneos";
     return events.find((e) => e.id === selectedEvent)?.name || "Torneo Seleccionado";
   }, [selectedEvent, events]);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen w-full bg-transparent text-brand-light-gray flex flex-col items-center pb-safe font-sans print:hidden" />
+    );
+  }
 
   return (
     <>

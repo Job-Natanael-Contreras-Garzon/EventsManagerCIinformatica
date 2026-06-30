@@ -36,6 +36,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <div className="fixed-background-bg" />
         {children}
         <ServiceWorkerRegistration />
       </body>
