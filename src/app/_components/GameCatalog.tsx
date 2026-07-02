@@ -14,7 +14,8 @@ interface GameCatalogProps {
 export function GameCatalog({ initialEvents }: GameCatalogProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"individual" | "team">("individual");
+  // null = sin filtro de tipo (muestra todos); "individual" o "team" filtra
+  const [activeTab, setActiveTab] = useState<"individual" | "team" | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<ActiveEvent | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -23,19 +24,21 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
     new Set(initialEvents.map((event) => event.category.name))
   ).sort();
 
-  // Handle tab change with transition for smooth rendering
+  // Toggle type filter: pressing the active chip again clears the filter
   const handleTabChange = (tab: "individual" | "team") => {
     startTransition(() => {
-      setActiveTab(tab);
+      setActiveTab((prev) => (prev === tab ? null : tab));
     });
   };
 
   // Filter events based on active tab, search query, and category
   const filteredEvents = initialEvents.filter((event) => {
-    // 1. Filter by Tab (Individual vs Team)
-    const isTeam = event.type === "TEAM";
-    if (activeTab === "individual" && isTeam) return false;
-    if (activeTab === "team" && !isTeam) return false;
+    // 1. Filter by type only when one is explicitly selected
+    if (activeTab !== null) {
+      const isTeam = event.type === "TEAM";
+      if (activeTab === "individual" && isTeam) return false;
+      if (activeTab === "team" && !isTeam) return false;
+    }
 
     // 2. Filter by Search Query
     if (searchQuery.trim() !== "") {
@@ -116,30 +119,46 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
         </div>
       </div>
 
-      {/* Team vs Individual Segmented Tabs */}
-      <div className="grid grid-cols-2 p-1 bg-brand-dark/60 border border-brand-blue/20 rounded-xl">
-        <button
-          onClick={() => handleTabChange("individual")}
-          className={cn(
-            "w-full py-3 rounded-lg text-sm font-semibold tracking-wide transition-all duration-150 active:scale-95 min-h-[44px]",
-            activeTab === "individual"
-              ? "bg-brand-blue/80 text-white shadow-md"
-              : "text-white/40 hover:text-white/70"
-          )}
-        >
-          Individuales
-        </button>
-        <button
-          onClick={() => handleTabChange("team")}
-          className={cn(
-            "w-full py-3 rounded-lg text-sm font-semibold tracking-wide transition-all duration-150 active:scale-95 min-h-[44px]",
-            activeTab === "team"
-              ? "bg-brand-blue/80 text-white shadow-md"
-              : "text-white/40 hover:text-white/70"
-          )}
-        >
-          En Equipo
-        </button>
+      {/* Type filter chips — start with no selection (shows all events) */}
+      <div className="flex items-center gap-2">
+        {/* Optional label */}
+        <span className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-white/30">
+          Tipo:
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleTabChange("individual")}
+            className={cn(
+              "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all duration-150 active:scale-95 min-h-[36px]",
+              activeTab === "individual"
+                ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-md"
+                : "bg-brand-dark/40 border-brand-blue/25 text-white/50 hover:text-white hover:border-brand-blue/50"
+            )}
+          >
+            {activeTab === "individual" ? (
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                Individual
+              </span>
+            ) : "Individual"}
+          </button>
+          <button
+            onClick={() => handleTabChange("team")}
+            className={cn(
+              "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all duration-150 active:scale-95 min-h-[36px]",
+              activeTab === "team"
+                ? "bg-brand-sky/20 border-brand-sky/40 text-brand-sky shadow-md"
+                : "bg-brand-dark/40 border-brand-blue/25 text-white/50 hover:text-white hover:border-brand-blue/50"
+            )}
+          >
+            {activeTab === "team" ? (
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-sky" />
+                En Equipo
+              </span>
+            ) : "En Equipo"}
+          </button>
+        </div>
       </div>
 
       {/* Events List Container */}
@@ -164,11 +183,12 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
             <p className="mt-1.5 text-sm text-zinc-500 max-w-xs leading-relaxed">
               No hay actividades activas que coincidan con la búsqueda o los filtros seleccionados.
             </p>
-            {(searchQuery || selectedCategory) && (
+            {(searchQuery || selectedCategory || activeTab) && (
               <button
                 onClick={() => {
                   setSearchQuery("");
                   setSelectedCategory(null);
+                  setActiveTab(null);
                 }}
                 className="mt-4 px-4 py-2 text-xs font-semibold bg-brand-blue/60 border border-brand-blue/30 rounded-xl text-brand-light-gray hover:bg-brand-blue transition-all active:scale-95"
               >

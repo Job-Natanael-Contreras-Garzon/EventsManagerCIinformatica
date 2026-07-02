@@ -182,6 +182,7 @@ export async function deleteUserAction(userIdToDelete: string): Promise<ActionRe
 
     return {
       success: true,
+      data: undefined,
     };
   } catch (error) {
     console.error("[Auth Action] Error en deleteUserAction:", error);
