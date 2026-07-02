@@ -64,7 +64,8 @@ export default async function Home() {
               Catálogo de Eventos
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-brand-light-gray/70">
-              Inscríbete en tus eventos favoritos. Coordina con encargados directos a través de WhatsApp y lidera tu equipo a la gloria.
+              Portal Oficial de Inscripcion para Actividades organizadas por el Centro Interno de Ingenieria Informatica.
+              Encuentra todos los Eventos Disponibles, Inscribete facilmente y se parte de nuestras Actividades academicas, deportivas y culturales.
             </p>
           </div>
         </section>
