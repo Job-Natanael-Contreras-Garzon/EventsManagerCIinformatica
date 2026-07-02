@@ -1,6 +1,7 @@
 // src/app/registro/exito/page.tsx
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { TicketActions } from "./TicketActions";
 
 export const metadata = {
   title: "Inscripción Exitosa | CI Informática",
@@ -99,7 +100,7 @@ export default async function ExitoPage({ searchParams }: PageProps) {
         </div>
 
         {/* Premium Ticket Card */}
-        <section className="w-full relative rounded-3xl border border-brand-blue/35 bg-brand-navy/80 p-6 shadow-2xl flex flex-col gap-5 overflow-hidden">
+        <section id="ticket-card" className="w-full relative rounded-3xl border border-brand-blue/35 bg-brand-navy/80 p-6 shadow-2xl flex flex-col gap-5 overflow-hidden">
           {/* Decorative Corner Dents (Punched Ticket look) */}
           <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-6 h-6 rounded-full bg-[#0e1693] border border-brand-blue/35 z-10" />
           <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 w-6 h-6 rounded-full bg-[#0e1693] border border-brand-blue/35 z-10" />
@@ -194,6 +195,14 @@ export default async function ExitoPage({ searchParams }: PageProps) {
             </span>
           </div>
         </section>
+
+        {/* Export & Share Ticket Actions */}
+        <TicketActions
+          confirmationCode={registration.confirmationCode}
+          eventName={event.name}
+          participantName={participant.fullName}
+          ticketElementId="ticket-card"
+        />
 
         {/* Action Coordinator Coordinates (Whatsapp Contact) */}
         {event.encargados.length > 0 && (

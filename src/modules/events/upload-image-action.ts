@@ -1,6 +1,7 @@
 // src/modules/events/upload-image-action.ts
 // =========================================================
 // Server Actions para el manejo de imágenes en Base64.
+// El cliente convierte cualquier imagen a WebP antes de enviar.
 // ⚠️ SERVER-ONLY: Punto de entrada seguro desde el cliente.
 // =========================================================
 "use server";
@@ -13,7 +14,11 @@ import type { ActionResult } from "@/modules/registration/types/action-result.ty
 /**
  * Server Action para subir y guardar la imagen de portada de un evento en Base64 en la base de datos.
  *
- * @param formData - FormData que contiene el archivo de imagen bajo la clave "image"
+ * El cliente es responsable de convertir la imagen a WebP antes de invocar
+ * este action (ver ImageUploadField.tsx → convertToWebP). Aquí solo se
+ * valida el tamaño como medida de defensa en profundidad.
+ *
+ * @param formData - FormData que contiene el archivo de imagen WebP bajo la clave "image"
  * @param eventId - El UUID del evento al que asociar la imagen
  */
 export async function uploadEventImage(
@@ -36,21 +41,22 @@ export async function uploadEventImage(
       };
     }
 
-    // Validación de formato: solo webp
-    if (file.type !== "image/webp") {
+    // Defensa en profundidad: validar que el archivo sea una imagen
+    if (!file.type.startsWith("image/")) {
       return {
         success: false,
-        error: "El formato de la imagen debe ser obligatoriamente WebP.",
+        error: "Solo se permiten archivos de imagen.",
       };
     }
 
-    // Validación de tamaño: máximo 500 KB
+    // Validación de tamaño: máximo 500 KB (el cliente ya debería optimizar, pero
+    // esta comprobación sirve como garantía adicional en el servidor)
     const maxSizeBytes = 500 * 1024;
     if (file.size > maxSizeBytes) {
       const sizeInKb = (file.size / 1024).toFixed(1);
       return {
         success: false,
-        error: `La imagen excede el límite máximo permitido de 500 KB (tu archivo pesa ${sizeInKb} KB).`,
+        error: `La imagen excede el límite máximo de 500 KB (recibido: ${sizeInKb} KB). Reduce la resolución de la imagen.`,
       };
     }
 

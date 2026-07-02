@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { RefreshButton } from "./RefreshButton";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 import Link from "next/link";
-import { logoutAction } from "@/modules/auth/actions/auth.actions";
 
 
 // Force Next.js to not cache page statically, ensuring data is fresh on reload/refresh
@@ -79,75 +79,8 @@ export default async function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-transparent text-brand-light-gray flex flex-col items-center pb-safe font-sans selection:bg-brand-sky selection:text-brand-navy">
       
-      {/* Sticky Premium Header with Navigation for Admin Functions */}
-      <header className="sticky top-0 z-40 w-full max-w-lg bg-brand-navy/80 backdrop-blur-md border-b border-brand-blue/35 px-4 py-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-blue to-brand-sky flex items-center justify-center font-bold text-sm text-brand-navy shadow-md shadow-brand-sky/20">
-              AD
-            </div>
-            <div>
-              <h1 className="text-sm font-bold tracking-tight text-white leading-none">
-                Admin Panel
-              </h1>
-              <span className="text-[10px] text-brand-sky/60 font-medium">
-                CI INGENIERÍA INFORMÁTICA
-              </span>
-            </div>
-          </div>
-          
-          {/* Mobile logout or status button */}
-          <div className="sm:hidden">
-            <form action={logoutAction}>
-              <button
-                type="submit"
-                className="text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-colors min-h-[44px] flex items-center px-2 cursor-pointer border-0 bg-transparent"
-              >
-                Salir
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Admin Navigation Hub Links (addressing user login/crud context) */}
-        <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-brand-blue/20 pt-2 sm:border-0 sm:pt-0">
-          <nav className="flex items-center gap-2">
-            <Link
-              href="/admin/dashboard"
-              className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-brand-sky bg-brand-sky/10 border border-brand-sky/20 pointer-events-none"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/admin/eventos"
-              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
-            >
-              Eventos
-            </Link>
-            <Link
-              href="/admin/registrados"
-              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
-            >
-              Registrados
-            </Link>
-            <Link
-              href="/admin/usuarios"
-              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
-            >
-              Usuarios
-            </Link>
-          </nav>
-          
-          <form action={logoutAction} className="hidden sm:block">
-            <button
-              type="submit"
-              className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/70 hover:text-white bg-brand-dark/60 border border-brand-blue/30 hover:bg-brand-blue/60 active:scale-95 transition-all min-h-[32px] cursor-pointer"
-            >
-              Cerrar Sesión
-            </button>
-          </form>
-        </div>
-      </header>
+      {/* Shared Admin Header with hamburger menu for mobile */}
+      <AdminHeader />
 
       {/* Main Admin Content Container */}
       <main className="w-full max-w-lg px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">

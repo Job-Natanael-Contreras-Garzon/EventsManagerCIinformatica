@@ -9,6 +9,81 @@ interface ImageUploadFieldProps {
   onRemoveExisting?: () => void;
 }
 
+/** Calidad WebP (0–1). 0.82 da un balance óptimo entre tamaño y calidad visual. */
+const WEBP_QUALITY = 0.82;
+
+/** Dimensión máxima (ancho o alto) en píxeles antes de reescalar. */
+const MAX_DIMENSION = 800;
+
+/**
+ * Convierte cualquier imagen (JPEG, PNG, GIF, AVIF, etc.) a WebP optimizado
+ * usando el API Canvas del navegador. También reescala la imagen si sus
+ * dimensiones superan MAX_DIMENSION px manteniendo la relación de aspecto.
+ *
+ * @param file - Archivo de imagen original del usuario.
+ * @returns Promesa que resuelve con un File WebP listo para enviar.
+ */
+async function convertToWebP(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      // ── Calcular dimensiones de destino ────────────────────────────────
+      let { width, height } = img;
+      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+        if (width >= height) {
+          height = Math.round((height / width) * MAX_DIMENSION);
+          width = MAX_DIMENSION;
+        } else {
+          width = Math.round((width / height) * MAX_DIMENSION);
+          height = MAX_DIMENSION;
+        }
+      }
+
+      // ── Dibujar en canvas y exportar a WebP ────────────────────────────
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("No se pudo obtener el contexto 2D del canvas."));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("El canvas no pudo generar el Blob WebP."));
+            return;
+          }
+          // Crear un File con extensión .webp y tipo correcto
+          const baseName = file.name.replace(/\.[^/.]+$/, "");
+          const webpFile = new File([blob], `${baseName}.webp`, {
+            type: "image/webp",
+            lastModified: Date.now(),
+          });
+          resolve(webpFile);
+        },
+        "image/webp",
+        WEBP_QUALITY
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("No se pudo cargar la imagen para convertirla."));
+    };
+
+    img.src = objectUrl;
+  });
+}
+
 export function ImageUploadField({
   value,
   onChange,
@@ -17,6 +92,7 @@ export function ImageUploadField({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [converting, setConverting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load initial Base64 image from DB
@@ -29,27 +105,44 @@ export function ImageUploadField({
     }
   }, [value]);
 
-  const validateAndProcessFile = (file: File) => {
+  const validateAndProcessFile = async (file: File) => {
     setErrorMsg(null);
 
-    // Format validation
-    if (file.type !== "image/webp") {
-      setErrorMsg("El formato del archivo debe ser WebP obligatoriamente.");
+    // Validar que sea un archivo de tipo imagen
+    if (!file.type.startsWith("image/")) {
+      setErrorMsg("Solo se permiten archivos de imagen (JPG, PNG, WebP, etc.).");
       return;
     }
 
-    // Size validation: max 500 KB
-    const maxBytes = 500 * 1024;
-    if (file.size > maxBytes) {
-      const actualSizeKb = (file.size / 1024).toFixed(1);
-      setErrorMsg(`La imagen excede el máximo de 500 KB (tu archivo pesa ${actualSizeKb} KB).`);
-      return;
-    }
+    setConverting(true);
+    try {
+      // Convertir a WebP optimizado sin importar el formato original
+      const webpFile = await convertToWebP(file);
 
-    // Create local object URL for instant preview
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
-    onChange(file);
+      // Validación de tamaño POST-conversión: máx. 500 KB
+      const maxBytes = 500 * 1024;
+      if (webpFile.size > maxBytes) {
+        const sizeKb = (webpFile.size / 1024).toFixed(1);
+        setErrorMsg(
+          `La imagen convertida ocupa ${sizeKb} KB, lo que supera el límite de 500 KB. ` +
+            `Prueba con una imagen de menor resolución o contenido.`
+        );
+        return;
+      }
+
+      // Crear URL de previsualización
+      const objectUrl = URL.createObjectURL(webpFile);
+      setPreviewUrl(objectUrl);
+      onChange(webpFile);
+    } catch (err) {
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : "Ocurrió un error al procesar la imagen."
+      );
+    } finally {
+      setConverting(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,7 +172,7 @@ export function ImageUploadField({
   };
 
   const triggerFileInput = () => {
-    fileInputRef.current?.click();
+    if (!converting) fileInputRef.current?.click();
   };
 
   const handleClear = (e: React.MouseEvent) => {
@@ -98,7 +191,7 @@ export function ImageUploadField({
   return (
     <div className="space-y-2">
       <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-        Arte Promocional / Flyer (WebP Cuadrado)
+        Arte Promocional / Flyer
       </label>
 
       <div
@@ -107,23 +200,36 @@ export function ImageUploadField({
         onDragLeave={handleDrag}
         onDrop={handleDrop}
         onClick={triggerFileInput}
-        className={`relative w-full aspect-square max-w-[200px] mx-auto rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all ${
-          dragActive
-            ? "border-violet-500 bg-violet-500/10"
+        className={`relative w-full aspect-square max-w-[200px] mx-auto rounded-2xl border-2 border-dashed flex flex-col items-center justify-center transition-all ${
+          converting
+            ? "cursor-wait border-violet-400/50 bg-violet-500/5"
+            : dragActive
+            ? "border-violet-500 bg-violet-500/10 cursor-copy"
             : previewUrl
-            ? "border-zinc-800 bg-zinc-950"
-            : "border-zinc-850 hover:border-zinc-700 bg-zinc-900/50"
+            ? "border-zinc-800 bg-zinc-950 cursor-pointer"
+            : "border-zinc-850 hover:border-zinc-700 bg-zinc-900/50 cursor-pointer"
         }`}
       >
+        {/* Input acepta cualquier imagen */}
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/webp"
+          accept="image/*"
           className="hidden"
           onChange={handleFileChange}
+          disabled={converting}
         />
 
-        {previewUrl ? (
+        {converting ? (
+          /* ── Estado de conversión ─────────────────────────────────────── */
+          <div className="p-4 text-center flex flex-col items-center gap-3">
+            <div className="w-10 h-10 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
+            <p className="text-[10px] font-semibold text-violet-400">
+              Convirtiendo a WebP…
+            </p>
+          </div>
+        ) : previewUrl ? (
+          /* ── Vista previa de la imagen ────────────────────────────────── */
           <div className="relative w-full h-full p-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -143,8 +249,9 @@ export function ImageUploadField({
             </button>
           </div>
         ) : (
+          /* ── Estado vacío / drop zone ─────────────────────────────────── */
           <div className="p-4 text-center flex flex-col items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-zinc-800/80 border border-zinc-700 flex items-center justify-center text-zinc-400 group-hover:text-zinc-250 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-zinc-800/80 border border-zinc-700 flex items-center justify-center text-zinc-400 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -156,8 +263,8 @@ export function ImageUploadField({
             </div>
             <div>
               <p className="text-xs font-bold text-zinc-250">Selecciona o arrastra el flyer</p>
-              <p className="text-[10px] text-zinc-500 mt-1">Solo formato WebP cuadrado</p>
-              <p className="text-[9px] text-zinc-550">Máx. 500 KB</p>
+              <p className="text-[10px] text-zinc-500 mt-1">JPG, PNG, WebP, AVIF…</p>
+              <p className="text-[9px] text-zinc-550">Se convierte a WebP automáticamente</p>
             </div>
           </div>
         )}

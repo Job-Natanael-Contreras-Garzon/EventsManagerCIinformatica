@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { logoutAction } from "@/modules/auth/actions/auth.actions";
+import { AdminHeader } from "@/components/admin/AdminHeader";
 
 
 interface EventInfo {
@@ -258,74 +258,8 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
       {/* ──────────────────────────────────────────────────────── */}
       <div className="min-h-screen w-full bg-transparent text-brand-light-gray flex flex-col items-center pb-safe font-sans selection:bg-brand-sky selection:text-brand-navy print:hidden">
         
-        {/* Sticky Premium Header with Navigation for Admin Functions */}
-        <header className="sticky top-0 z-40 w-full max-w-lg bg-brand-navy/80 backdrop-blur-md border-b border-brand-blue/35 px-4 py-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-blue to-brand-sky flex items-center justify-center font-bold text-sm text-brand-navy shadow-md shadow-brand-sky/20">
-                AD
-              </div>
-              <div>
-                <h1 className="text-sm font-bold tracking-tight text-white leading-none">
-                  Admin Panel
-                </h1>
-                <span className="text-[10px] text-brand-sky/60 font-medium uppercase">
-                  CI INGENIERÍA INFORMÁTICA
-                </span>
-              </div>
-            </div>
-            
-            <div className="sm:hidden">
-              <form action={logoutAction}>
-                <button
-                  type="submit"
-                  className="text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-colors min-h-[44px] flex items-center px-2 cursor-pointer border-0 bg-transparent"
-                >
-                  Salir
-                </button>
-              </form>
-            </div>
-          </div>
-
-          {/* Admin Navigation Hub Links */}
-          <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-brand-blue/20 pt-2 sm:border-0 sm:pt-0">
-            <nav className="flex items-center gap-2">
-              <Link
-                href="/admin/dashboard"
-                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/admin/eventos"
-                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
-              >
-                Eventos
-              </Link>
-              <Link
-                href="/admin/registrados"
-                className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-brand-sky bg-brand-sky/10 border border-brand-sky/20 pointer-events-none"
-              >
-                Registrados
-              </Link>
-              <Link
-                href="/admin/usuarios"
-                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
-              >
-                Usuarios
-              </Link>
-            </nav>
-            
-            <form action={logoutAction} className="hidden sm:block">
-              <button
-                type="submit"
-                className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-white bg-brand-dark/65 border border-brand-blue/30 hover:bg-brand-blue/40 active:scale-95 transition-all min-h-[32px] cursor-pointer"
-              >
-                Cerrar Sesión
-              </button>
-            </form>
-          </div>
-        </header>
+        {/* Shared Admin Header with hamburger menu for mobile */}
+        <AdminHeader />
 
         {/* Main Console Content */}
         <main className="w-full max-w-lg px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
