@@ -5,8 +5,8 @@ import { GameCatalog } from "./_components/GameCatalog";
 export const revalidate = 60; // Revalidate every minute
 
 export const metadata = {
-  title: "Catálogo de Juegos | CI Informática",
-  description: "Explora los eventos y torneos disponibles en la Facultad de Ingeniería Informática. Inscríbete de forma individual o con tu equipo.",
+  title: "Eventos | CI Informática",
+  description: "Explora los eventos disponibles por el Aniversario de Ing. Informatica. Inscríbete de forma individual o con tu equipo.",
 };
 
 export default async function Home() {
@@ -19,9 +19,11 @@ export default async function Home() {
       {/* Sticky Premium Header */}
       <header className="sticky top-0 z-40 w-full max-w-md bg-brand-dark/70 backdrop-blur-md border-b border-brand-blue/20 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand-blue/80 border border-brand-sky/20 flex items-center justify-center font-bold text-sm text-white shadow-sm">
-            CI
-          </div>
+          <img
+            src="/assets/logoInformatica.webp"
+            alt="CI Ingeniería Informática"
+            className="w-8 h-8 rounded-lg object-contain shadow-sm"
+          />
           <div>
             <h1 className="text-sm font-bold tracking-tight text-white leading-none">
               Portal de Eventos
@@ -34,12 +36,17 @@ export default async function Home() {
         
         {/* Active PWA Indicator / Notification Hub (Static representation) */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-brand-blue/20 border border-brand-sky/15 rounded-full px-2 py-0.5">
+          <a
+            href="https://www.tiktok.com/@ci.ingenieriainformatica?_r=1&_t=ZS-97grDptqxOR"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 bg-brand-blue/20 border border-brand-sky/15 rounded-full px-2 py-0.5 hover:bg-brand-blue/40 transition-colors"
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
             <span className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">
               En Vivo
             </span>
-          </div>
+          </a>
         </div>
       </header>
 
@@ -51,13 +58,13 @@ export default async function Home() {
           <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-sky/10 rounded-full blur-2xl" />
           <div className="relative z-10">
             <span className="text-[10px] font-bold text-brand-sky uppercase tracking-widest">
-              Semana Universitaria 2026
+              Semana Facultativa 2026
             </span>
             <h2 className="mt-1 text-2xl font-black tracking-tight text-white">
-              Catálogo de Torneos
+              Catálogo de Eventos
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-brand-light-gray/70">
-              Inscríbete en tus juegos favoritos. Coordina con encargados directos a través de WhatsApp y lidera tu equipo a la gloria.
+              Inscríbete en tus eventos favoritos. Coordina con encargados directos a través de WhatsApp y lidera tu equipo a la gloria.
             </p>
           </div>
         </section>
@@ -83,7 +90,7 @@ export default async function Home() {
 
         {/* Nav Item: Support */}
         <a
-          href="https://wa.me/573001234567"
+          href="https://wa.me/59174962427"
           target="_blank"
           rel="noopener noreferrer"
           className="flex flex-col items-center justify-center gap-1 text-brand-sky/60 hover:text-brand-sky w-16 h-12 transition-all duration-150 min-h-[44px]"

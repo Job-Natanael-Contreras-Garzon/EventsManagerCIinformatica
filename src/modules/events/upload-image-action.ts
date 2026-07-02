@@ -49,14 +49,14 @@ export async function uploadEventImage(
       };
     }
 
-    // Validación de tamaño: máximo 500 KB (el cliente ya debería optimizar, pero
+    // Validación de tamaño: máximo 1 MB (el cliente ya debería optimizar, pero
     // esta comprobación sirve como garantía adicional en el servidor)
-    const maxSizeBytes = 500 * 1024;
+    const maxSizeBytes = 1 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
       const sizeInKb = (file.size / 1024).toFixed(1);
       return {
         success: false,
-        error: `La imagen excede el límite máximo de 500 KB (recibido: ${sizeInKb} KB). Reduce la resolución de la imagen.`,
+        error: `La imagen excede el límite máximo de 1 MB (recibido: ${sizeInKb} KB). Reduce la resolución de la imagen.`,
       };
     }
 

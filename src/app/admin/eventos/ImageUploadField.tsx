@@ -15,6 +15,9 @@ const WEBP_QUALITY = 0.82;
 /** Dimensión máxima (ancho o alto) en píxeles antes de reescalar. */
 const MAX_DIMENSION = 800;
 
+/** Tamaño máximo permitido para la imagen convertida (en bytes). */
+const MAX_SIZE_BYTES = 1 * 1024 * 1024; // 1 MB
+
 /**
  * Convierte cualquier imagen (JPEG, PNG, GIF, AVIF, etc.) a WebP optimizado
  * usando el API Canvas del navegador. También reescala la imagen si sus
@@ -119,12 +122,11 @@ export function ImageUploadField({
       // Convertir a WebP optimizado sin importar el formato original
       const webpFile = await convertToWebP(file);
 
-      // Validación de tamaño POST-conversión: máx. 500 KB
-      const maxBytes = 500 * 1024;
-      if (webpFile.size > maxBytes) {
+      // Validación de tamaño POST-conversión: máx. 1 MB
+      if (webpFile.size > MAX_SIZE_BYTES) {
         const sizeKb = (webpFile.size / 1024).toFixed(1);
         setErrorMsg(
-          `La imagen convertida ocupa ${sizeKb} KB, lo que supera el límite de 500 KB. ` +
+          `La imagen convertida ocupa ${sizeKb} KB, lo que supera el límite de 1 MB. ` +
             `Prueba con una imagen de menor resolución o contenido.`
         );
         return;
@@ -264,7 +266,7 @@ export function ImageUploadField({
             <div>
               <p className="text-xs font-bold text-zinc-250">Selecciona o arrastra el flyer</p>
               <p className="text-[10px] text-zinc-500 mt-1">JPG, PNG, WebP, AVIF…</p>
-              <p className="text-[9px] text-zinc-550">Se convierte a WebP automáticamente</p>
+              <p className="text-[9px] text-zinc-550">Se convierte a WebP · Máx. 1 MB</p>
             </div>
           </div>
         )}
