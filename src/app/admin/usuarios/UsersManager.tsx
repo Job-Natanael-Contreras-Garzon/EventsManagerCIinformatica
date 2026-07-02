@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserSchema, type CreateUserInput } from "@/modules/auth/schemas/auth.schema";
-import { createUserAction } from "@/modules/auth/actions/auth.actions";
+import { createUserAction, deleteUserAction } from "@/modules/auth/actions/auth.actions";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 
 interface UsersManagerProps {
@@ -30,6 +30,21 @@ export function UsersManager({ initialUsers }: UsersManagerProps) {
   } = useForm<CreateUserInput>({
     resolver: zodResolver(createUserSchema),
   });
+
+  const handleDelete = (userId: string, userName: string) => {
+    if (confirm(`¿Estás seguro de que deseas eliminar al administrador "${userName}"?`)) {
+      startTransition(async () => {
+        const result = await deleteUserAction(userId);
+        if (!result.success) {
+          alert(result.error);
+          return;
+        }
+        
+        // Remove locally from state
+        setUsers((prev) => prev.filter((u) => u.id !== userId));
+      });
+    }
+  };
 
   // Client-side local update in sync with Server revalidation
   const onSubmit = (data: CreateUserInput) => {
@@ -126,8 +141,20 @@ export function UsersManager({ initialUsers }: UsersManagerProps) {
                     <p className="text-xs text-brand-sky/70 mt-0.5">{user.username}</p>
                   </div>
                 </div>
-                <div className="text-[10px] font-semibold text-brand-sky/40 border border-brand-blue/20 bg-brand-navy/30 px-2 py-1 rounded-md">
-                  Admin
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-semibold text-brand-sky/40 border border-brand-blue/20 bg-brand-navy/30 px-2 py-1 rounded-md">
+                    Admin
+                  </span>
+                  <button
+                    onClick={() => handleDelete(user.id, user.name)}
+                    disabled={isPending}
+                    className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/25 flex items-center justify-center text-rose-400 hover:text-white hover:bg-rose-500/80 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:scale-100"
+                    title="Eliminar Administrador"
+                  >
+                    <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
               </article>
             );

@@ -87,3 +87,19 @@ export async function ensureDefaultAdmin(): Promise<void> {
     console.log(`[Auth Service] Creado administrador por defecto: ${defaultEmail}`);
   }
 }
+
+/**
+ * Elimina un administrador por su ID de base de datos.
+ */
+export async function deleteAdminUser(id: string): Promise<void> {
+  await db.user.delete({
+    where: { id },
+  });
+}
+
+/**
+ * Cuenta la cantidad total de administradores registrados.
+ */
+export async function countAdminUsers(): Promise<number> {
+  return await db.user.count();
+}

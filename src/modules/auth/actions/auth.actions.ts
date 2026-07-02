@@ -5,9 +5,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { loginSchema, createUserSchema } from "../schemas/auth.schema";
-import { getUserByUsername, createAdminUser, ensureDefaultAdmin } from "../services/auth.service";
+import { getUserByUsername, createAdminUser, ensureDefaultAdmin, deleteAdminUser, countAdminUsers } from "../services/auth.service";
 import { verifyPassword, hashPassword } from "../utils/crypto";
-import { signJWT } from "../utils/jwt";
+import { signJWT, verifyJWT } from "../utils/jwt";
 import type { ActionResult } from "@/modules/registration/types/action-result.types";
 
 /**
@@ -130,3 +130,65 @@ export async function createUserAction(rawInput: unknown): Promise<ActionResult<
     };
   }
 }
+
+/**
+ * Server Action: Elimina un usuario administrador por su ID.
+ * Implementa validaciones de seguridad:
+ * - El usuario no puede eliminarse a sí mismo.
+ * - Debe haber al menos un administrador en el sistema.
+ */
+export async function deleteUserAction(userIdToDelete: string): Promise<ActionResult> {
+  try {
+    // 1. Obtener la sesión actual del token JWT
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+    if (!token) {
+      return {
+        success: false,
+        error: "Acción no autorizada. Por favor inicia sesión.",
+      };
+    }
+
+    const currentSession = await verifyJWT(token);
+    if (!currentSession) {
+      return {
+        success: false,
+        error: "Sesión inválida o expirada.",
+      };
+    }
+
+    // 2. Comprobar que no se intente eliminar a sí mismo
+    if (currentSession.userId === userIdToDelete) {
+      return {
+        success: false,
+        error: "No puedes eliminar tu propia cuenta de administrador mientras estás en sesión.",
+      };
+    }
+
+    // 3. Comprobar que no sea el único administrador del sistema
+    const adminCount = await countAdminUsers();
+    if (adminCount <= 1) {
+      return {
+        success: false,
+        error: "No se puede eliminar el último administrador del sistema.",
+      };
+    }
+
+    // 4. Proceder con la eliminación
+    await deleteAdminUser(userIdToDelete);
+
+    // Revalidar la ruta de usuarios para actualizar la lista
+    revalidatePath("/admin/usuarios");
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("[Auth Action] Error en deleteUserAction:", error);
+    return {
+      success: false,
+      error: "Ocurrió un error inesperado al eliminar el administrador.",
+    };
+  }
+}
+
