@@ -2,18 +2,23 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { eventSchema, type EventInput } from "@/modules/events/schema";
-import { upsertEvent, deleteEvent } from "@/modules/events/actions";
+import { upsertEvent, deleteEvent, createCategory, deleteCategory } from "@/modules/events/actions";
 import { uploadEventImage, removeEventImage } from "@/modules/events/upload-image-action";
 import { ImageUploadField } from "./ImageUploadField";
+import { logoutAction } from "@/modules/auth/actions/auth.actions";
+
 
 interface Category {
   id: string;
   name: string;
+  _count?: {
+    events: number;
+  };
 }
 
 interface EventData {
@@ -74,6 +79,44 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [markedImageForDeletion, setMarkedImageForDeletion] = useState(false);
 
+  const [activeTab, setActiveTab] = useState<"torneos" | "categorias">("torneos");
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [isCategoryPending, startCategoryTransition] = useTransition();
+
+  const handleCreateCategory = () => {
+    if (!newCategoryName.trim()) return;
+    setCategoryError(null);
+    startCategoryTransition(async () => {
+      const response = await createCategory({ name: newCategoryName });
+      if (!response.success) {
+        setCategoryError(response.error || "Ocurrió un error al crear la categoría.");
+        if (response.fieldErrors?.name) {
+          setCategoryError(response.fieldErrors.name[0]);
+        }
+      } else {
+        setNewCategoryName("");
+        router.refresh();
+      }
+    });
+  };
+
+  const handleDeleteCategory = (id: string, name: string) => {
+    const confirmed = window.confirm(
+      `¿Estás seguro de eliminar la categoría "${name}"?`
+    );
+    if (!confirmed) return;
+
+    startCategoryTransition(async () => {
+      const response = await deleteCategory(id);
+      if (!response.success) {
+        alert(response.error || "Ocurrió un error al eliminar la categoría.");
+      } else {
+        router.refresh();
+      }
+    });
+  };
+
   const {
     register,
     handleSubmit,
@@ -82,6 +125,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
     formState: { errors, isSubmitting },
     setError,
     watch,
+    control,
   } = useForm<EventInput>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
@@ -95,9 +139,13 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       isActive: true,
       date: toDatetimeLocalString(new Date(Date.now() + 86400000)), // tomorrow
       registrationDeadline: "",
-      encargadoName: "",
-      encargadoPhone: "",
+      encargados: [{ name: "", phone: "" }],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "encargados",
   });
 
   const selectedType = watch("type");
@@ -119,8 +167,7 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       isActive: true,
       date: toDatetimeLocalString(new Date(Date.now() + 86400000)),
       registrationDeadline: "",
-      encargadoName: "",
-      encargadoPhone: "",
+      encargados: [{ name: "", phone: "" }],
     });
     setIsOpen(true);
   };
@@ -133,7 +180,6 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
     setMarkedImageForDeletion(false);
     
     const detectedType = event.type as "INDIVIDUAL" | "TEAM";
-    const firstEncargado = event.encargados?.[0];
     
     reset({
       id: event.id,
@@ -147,10 +193,12 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
       isActive: event.isActive,
       date: toDatetimeLocalString(event.date),
       registrationDeadline: event.registrationDeadline ? toDatetimeLocalString(event.registrationDeadline) : "",
-      encargadoName: firstEncargado?.name || "",
-      encargadoPhone: firstEncargado?.phone
-        ? (firstEncargado.phone.startsWith("591") ? firstEncargado.phone.slice(3) : firstEncargado.phone)
-        : "",
+      encargados: event.encargados && event.encargados.length > 0
+        ? event.encargados.map(enc => ({
+            name: enc.name,
+            phone: enc.phone.startsWith("591") ? enc.phone.slice(3) : enc.phone,
+          }))
+        : [{ name: "", phone: "" }],
     });
     setIsOpen(true);
   };
@@ -233,32 +281,34 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
     <div className="min-h-screen bg-transparent text-brand-light-gray flex flex-col items-center pb-safe font-sans selection:bg-brand-sky selection:text-brand-navy">
       
       {/* Sticky Premium Header with Navigation for Admin Functions */}
-      <header className="sticky top-0 z-40 w-full max-w-lg bg-brand-navy/80 backdrop-blur-md border-b border-brand-blue/35 px-4 py-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+      <header className="sticky top-0 z-40 w-full max-w-lg bg-brand-dark/70 backdrop-blur-md border-b border-brand-blue/20 px-4 py-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-blue to-brand-sky flex items-center justify-center font-bold text-sm text-brand-navy shadow-md shadow-brand-sky/20">
+            <div className="w-8 h-8 rounded-lg bg-brand-blue/80 border border-brand-sky/20 flex items-center justify-center font-bold text-sm text-white shadow-sm">
               AD
             </div>
             <div>
               <h1 className="text-sm font-bold tracking-tight text-white leading-none">
                 Admin Panel
               </h1>
-              <span className="text-[10px] text-brand-sky/60 font-medium">
+              <span className="text-[10px] text-white/40 font-medium">
                 CI INGENIERÍA INFORMÁTICA
               </span>
             </div>
           </div>
           
           <div className="sm:hidden">
-            <Link
-              href="/admin/login"
-              className="text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-colors min-h-[44px] flex items-center px-2"
-            >
-              Salir
-            </Link>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-colors min-h-[44px] flex items-center px-2 cursor-pointer border-0 bg-transparent"
+              >
+                Salir
+              </button>
+            </form>
           </div>
         </div>
-              <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-brand-blue/20 pt-2 sm:border-0 sm:pt-0">
+        <div className="flex items-center justify-between sm:justify-end gap-3 border-t border-brand-blue/20 pt-2 sm:border-0 sm:pt-0">
           <nav className="flex items-center gap-2">
             <Link
               href="/admin/dashboard"
@@ -278,14 +328,22 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
             >
               Registrados
             </Link>
+            <Link
+              href="/admin/usuarios"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
+            >
+              Usuarios
+            </Link>
           </nav>
           
-          <Link
-            href="/admin/login"
-            className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-white bg-brand-dark/65 border border-brand-blue/30 hover:bg-brand-blue/40 active:scale-95 transition-all min-h-[32px]"
-          >
-            Cerrar Sesión
-          </Link>
+          <form action={logoutAction} className="hidden sm:block">
+            <button
+              type="submit"
+              className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-white bg-brand-dark/65 border border-brand-blue/30 hover:bg-brand-blue/40 active:scale-95 transition-all min-h-[32px] cursor-pointer"
+            >
+              Cerrar Sesión
+            </button>
+          </form>
         </div>
       </header>
 
@@ -303,95 +361,208 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
             </h2>
           </div>
           
-          <button
-            onClick={handleNewEvent}
-            className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-bold text-brand-navy bg-brand-sky hover:bg-brand-sky/90 active:scale-95 transition-all min-h-[40px] shadow-lg shadow-brand-sky/20"
-          >
-            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
-            </svg>
-            Nuevo Torneo
-          </button>
-        </section>
-
-        {/* Compact List View */}
-        <section className="flex flex-col gap-3">
-          {initialEvents.length > 0 ? (
-            initialEvents.map((event) => {
-              const type = event.type;
-              const isTeam = type === "TEAM";
-              
-              // Count current registrations
-              const count = isTeam ? event._count.teams : event._count.registrations;
-              const max = event.maxParticipants;
-              const occupancyText = max ? `${count}/${max}` : `${count}/∞`;
-              return (
-                <article
-                  key={event.id}
-                  className="p-4 rounded-2xl bg-brand-dark/45 border border-brand-blue/30 flex items-center justify-between gap-4 hover:border-brand-blue/45 transition-all duration-150"
-                >
-                  <div className="flex-1 min-w-0 space-y-1.5">
-                    {/* Badge line */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-navy/60 border border-brand-blue/30 text-brand-sky">
-                        {event.category.name}
-                      </span>
-                      <span
-                        className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                          isTeam
-                            ? "bg-brand-sky/15 border-brand-sky/25 text-brand-sky"
-                            : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                        }`}
-                      >
-                        {isTeam ? "EQUIPO" : "INDIVIDUAL"}
-                      </span>
-                      <span
-                        className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                          event.isActive
-                            ? "text-emerald-450"
-                            : "text-rose-500"
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${event.isActive ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
-                        {event.isActive ? "Abierto" : "Cerrado"}
-                      </span>
-                    </div>
-
-                    {/* Event Name */}
-                    <h3 className="text-sm font-bold text-white tracking-tight line-clamp-1">
-                      {event.name}
-                    </h3>
-                    
-                    {/* Occupancy details */}
-                    <p className="text-[11px] text-brand-sky/60">
-                      Ocupación: <span className="font-mono text-brand-light-gray font-semibold">{occupancyText}</span> {isTeam ? "Equipos" : "Jugadores"}
-                    </p>
-                  </div>
-
-                  {/* Actions column */}
-                  <div className="shrink-0 flex items-center gap-2">
-                    <button
-                      onClick={() => handleEditEvent(event)}
-                      className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-brand-light-gray hover:text-white bg-brand-blue/60 border border-brand-blue/30 hover:bg-brand-blue/80 hover:border-brand-blue/40 active:scale-95 transition-all min-h-[36px]"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDeleteEvent(event.id, event.name)}
-                      className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-rose-400 hover:text-rose-350 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 active:scale-95 transition-all min-h-[36px]"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                </article>
-              );
-            })
-          ) : (
-            <div className="p-10 rounded-2xl bg-zinc-950/40 border border-zinc-900 text-center text-xs text-zinc-500 font-medium">
-              No hay torneos registrados. ¡Crea uno nuevo arriba!
-            </div>
+          {activeTab === "torneos" && (
+            <button
+              onClick={handleNewEvent}
+              className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-blue/80 hover:bg-brand-blue active:scale-95 transition-all min-h-[40px] shadow-md border border-brand-sky/20"
+            >
+              <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+              </svg>
+              Nuevo Torneo
+            </button>
           )}
         </section>
+
+        {/* Tab switcher */}
+        <div className="flex bg-brand-dark/50 border border-brand-blue/25 p-1 rounded-xl">
+          <button
+            onClick={() => setActiveTab("torneos")}
+            className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all min-h-[38px] flex items-center justify-center ${
+              activeTab === "torneos"
+                ? "bg-brand-sky text-brand-navy shadow-lg shadow-brand-sky/15"
+                : "text-brand-sky/60 hover:text-white hover:bg-brand-blue/15"
+            }`}
+          >
+            Torneos
+          </button>
+          <button
+            onClick={() => setActiveTab("categorias")}
+            className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all min-h-[38px] flex items-center justify-center ${
+              activeTab === "categorias"
+                ? "bg-brand-sky text-brand-navy shadow-lg shadow-brand-sky/15"
+                : "text-brand-sky/60 hover:text-white hover:bg-brand-blue/15"
+            }`}
+          >
+            Categorías
+          </button>
+        </div>
+
+        {/* Torneos View */}
+        {activeTab === "torneos" && (
+          <section className="flex flex-col gap-3">
+            {initialEvents.length > 0 ? (
+              initialEvents.map((event) => {
+                const type = event.type;
+                const isTeam = type === "TEAM";
+                
+                // Count current registrations
+                const count = isTeam ? event._count.teams : event._count.registrations;
+                const max = event.maxParticipants;
+                const occupancyText = max ? `${count}/${max}` : `${count}/∞`;
+                return (
+                  <article
+                    key={event.id}
+                    className="p-4 rounded-2xl bg-brand-dark/70 border border-brand-blue/20 flex items-center justify-between gap-4 hover:border-brand-blue/35 transition-all duration-150"
+                  >
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      {/* Badge line */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-dark/60 border border-brand-blue/20 text-white/60">
+                          {event.category.name}
+                        </span>
+                        <span
+                          className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                            isTeam
+                              ? "bg-brand-sky/15 border-brand-sky/25 text-brand-sky"
+                              : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                          }`}
+                        >
+                          {isTeam ? "EQUIPO" : "INDIVIDUAL"}
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                            event.isActive
+                              ? "text-emerald-450"
+                              : "text-rose-500"
+                          }`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${event.isActive ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
+                          {event.isActive ? "Abierto" : "Cerrado"}
+                        </span>
+                      </div>
+
+                      {/* Event Name */}
+                      <h3 className="text-sm font-bold text-white tracking-tight line-clamp-1">
+                        {event.name}
+                      </h3>
+                      
+                      {/* Occupancy details */}
+                      <p className="text-[11px] text-white/40">
+                        Ocupación: <span className="font-mono text-brand-light-gray font-semibold">{occupancyText}</span> {isTeam ? "Equipos" : "Jugadores"}
+                      </p>
+                    </div>
+
+                    {/* Actions column */}
+                    <div className="shrink-0 flex items-center gap-2">
+                      <button
+                        onClick={() => handleEditEvent(event)}
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white/70 hover:text-white bg-brand-blue/40 border border-brand-blue/20 hover:bg-brand-blue/60 hover:border-brand-blue/35 active:scale-95 transition-all min-h-[36px]"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDeleteEvent(event.id, event.name)}
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-rose-400 hover:text-rose-350 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 active:scale-95 transition-all min-h-[36px]"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </article>
+                );
+              })
+            ) : (
+              <div className="p-10 rounded-2xl bg-zinc-950/40 border border-zinc-900 text-center text-xs text-zinc-500 font-medium">
+                No hay torneos registrados. ¡Crea uno nuevo arriba!
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Categorías View */}
+        {activeTab === "categorias" && (
+          <section className="flex flex-col gap-6">
+            {/* Formulario Crear Categoría */}
+            <div className="p-5 rounded-2xl bg-brand-dark/70 border border-brand-blue/20 flex flex-col gap-3.5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-brand-sky/80">
+                Crear Nueva Categoría
+              </h3>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => {
+                    setNewCategoryName(e.target.value);
+                    setCategoryError(null);
+                  }}
+                  placeholder="Ej. Juegos de Mesa"
+                  className="flex-1 min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all rounded-xl"
+                />
+                <button
+                  onClick={handleCreateCategory}
+                  disabled={isCategoryPending || !newCategoryName.trim()}
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-brand-navy bg-brand-sky hover:brightness-110 disabled:opacity-40 disabled:pointer-events-none active:scale-95 transition-all min-h-[44px] shrink-0"
+                >
+                  {isCategoryPending ? "Creando..." : "Crear"}
+                </button>
+              </div>
+              {categoryError && (
+                <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                  {categoryError}
+                </p>
+              )}
+            </div>
+
+            {/* Listado de Categorías */}
+            <div className="flex flex-col gap-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-brand-sky/60 px-1">
+                Categorías Existentes
+              </h3>
+              {categories.length > 0 ? (
+                categories.map((cat) => {
+                  const hasEvents = cat._count && cat._count.events > 0;
+                  return (
+                    <article
+                      key={cat.id}
+                      className="p-4 rounded-2xl bg-brand-dark/70 border border-brand-blue/20 flex items-center justify-between gap-4"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-bold text-white tracking-tight truncate">
+                          {cat.name}
+                        </h4>
+                        <p className="text-[11px] text-white/40">
+                          {cat._count?.events === 1
+                            ? "1 torneo asociado"
+                            : `${cat._count?.events || 0} torneos asociados`}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                        disabled={hasEvents}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all min-h-[36px] ${
+                          hasEvents
+                            ? "bg-brand-navy/30 text-white/20 border border-brand-blue/10 cursor-not-allowed opacity-45"
+                            : "text-rose-450 hover:text-rose-400 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 active:scale-95"
+                        }`}
+                        title={
+                          hasEvents
+                            ? "No se puede eliminar porque contiene torneos asociados."
+                            : "Eliminar categoría"
+                        }
+                      >
+                        Eliminar
+                      </button>
+                    </article>
+                  );
+                })
+              ) : (
+                <div className="p-10 rounded-2xl bg-zinc-950/40 border border-zinc-900 text-center text-xs text-zinc-500 font-medium">
+                  No hay categorías registradas.
+                </div>
+              )}
+            </div>
+          </section>
+        )}
       </main>
 
       {/* Slide-Up Bottom Sheet Modal */}
@@ -399,12 +570,12 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
         <>
           {/* Backdrop overlay */}
           <div
-            className="fixed inset-0 bg-brand-navy/80 backdrop-blur-sm z-50 transition-opacity"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity"
             onClick={() => setIsOpen(false)}
           />
 
           {/* Drawer sheet container */}
-          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-navy border-t border-brand-blue/35 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl transition-all duration-300 max-h-[88vh] overflow-y-auto flex flex-col">
+          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-brand-blue/25 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl transition-all duration-300 max-h-[88vh] overflow-y-auto flex flex-col">
             
             {/* Top native drag bar */}
             <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5 shrink-0" />
@@ -635,44 +806,93 @@ export function EventsManager({ initialEvents, categories }: EventsManagerProps)
                 </div>
               </div>
 
-              {/* Encargado del Torneo */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Nombre del Encargado */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="encargadoName">
-                    Nombre del Encargado
-                  </label>
-                  <input
-                    id="encargadoName"
-                    type="text"
-                    placeholder="Ej. Juan Pérez"
-                    {...register("encargadoName")}
-                    className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
-                  />
-                  {errors.encargadoName && (
-                    <p className="text-[10px] text-rose-500 font-semibold" role="alert">
-                      {errors.encargadoName.message}
-                    </p>
-                  )}
+              {/* Encargados del Torneo */}
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80">
+                    Encargados del Torneo
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => append({ name: "", phone: "" })}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-brand-sky hover:text-white transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Añadir Encargado
+                  </button>
                 </div>
 
-                {/* Celular del Encargado */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="encargadoPhone">
-                    Celular del Encargado
-                  </label>
-                  <input
-                    id="encargadoPhone"
-                    type="text"
-                    placeholder="Ej. 70712345"
-                    {...register("encargadoPhone")}
-                    className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
-                  />
-                  {errors.encargadoPhone && (
-                    <p className="text-[10px] text-rose-500 font-semibold" role="alert">
-                      {errors.encargadoPhone.message}
-                    </p>
-                  )}
+                <div className="space-y-3">
+                  {fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="p-3.5 rounded-xl bg-brand-navy/35 border border-brand-blue/15 space-y-3 relative"
+                    >
+                      {/* Encargado Header / Delete icon */}
+                      <div className="flex items-center justify-between border-b border-brand-blue/10 pb-1.5">
+                        <span className="text-[9px] font-bold text-white/50 uppercase">
+                          Encargado #{index + 1}
+                        </span>
+                        {fields.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => remove(index)}
+                            className="text-[9px] font-bold uppercase text-rose-450 hover:text-rose-400 transition-colors"
+                          >
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Nombre */}
+                        <div className="space-y-1.5">
+                          <label
+                            className="text-[9px] font-bold uppercase tracking-wider text-white/40"
+                            htmlFor={`encargados.${index}.name`}
+                          >
+                            Nombre
+                          </label>
+                          <input
+                            id={`encargados.${index}.name`}
+                            type="text"
+                            placeholder="Ej. Juan Pérez"
+                            {...register(`encargados.${index}.name` as const)}
+                            className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/25 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all rounded-xl"
+                          />
+                          {errors.encargados?.[index]?.name && (
+                            <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                              {errors.encargados[index]?.name?.message}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Celular */}
+                        <div className="space-y-1.5">
+                          <label
+                            className="text-[9px] font-bold uppercase tracking-wider text-white/40"
+                            htmlFor={`encargados.${index}.phone`}
+                          >
+                            Celular
+                          </label>
+                          <input
+                            id={`encargados.${index}.phone`}
+                            type="text"
+                            placeholder="Ej. 70712345"
+                            {...register(`encargados.${index}.phone` as const)}
+                            className="w-full min-h-[44px] px-3.5 bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/25 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all rounded-xl"
+                          />
+                          {errors.encargados?.[index]?.phone && (
+                            <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                              {errors.encargados[index]?.phone?.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

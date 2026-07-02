@@ -125,7 +125,7 @@ export function EventCard({ event, className, onViewDetails }: EventCardProps) {
   return (
     <article
       className={cn(
-        "group relative flex flex-col justify-between w-full rounded-2xl border border-brand-blue/30 bg-brand-dark/45 p-5 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:border-brand-sky/40 sm:p-6",
+        "group relative flex flex-col justify-between w-full rounded-2xl border border-brand-blue/20 bg-brand-dark/80 p-5 shadow-xl transition-all duration-300 hover:border-brand-blue/40 sm:p-6",
         styles.glow,
         className
       )}
@@ -152,13 +152,13 @@ export function EventCard({ event, className, onViewDetails }: EventCardProps) {
         </div>
 
         {/* Title */}
-        <h3 className="mt-4 text-xl font-bold tracking-tight text-zinc-100 group-hover:text-white transition-colors duration-150">
+        <h3 className="mt-4 text-xl font-bold tracking-tight text-white group-hover:text-brand-light-gray transition-colors duration-150">
           {event.name}
         </h3>
 
         {/* Description */}
         {event.description && (
-          <p className="mt-2 text-sm leading-relaxed text-zinc-400 font-normal line-clamp-3">
+          <p className="mt-2 text-sm leading-relaxed text-white/50 font-normal line-clamp-3">
             {event.description}
           </p>
         )}
@@ -264,10 +264,10 @@ export function EventCard({ event, className, onViewDetails }: EventCardProps) {
               {event.encargados.map((enc) => (
                 <div
                   key={enc.id}
-                  className="flex items-center justify-between gap-2 rounded-xl bg-brand-navy/40 p-2 border border-brand-blue/30"
+                  className="flex items-center justify-between gap-2 rounded-xl bg-brand-dark/60 p-2 border border-brand-blue/20"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-brand-blue/60 flex items-center justify-center text-xs font-semibold text-white">
+                    <div className="w-6 h-6 rounded-full bg-brand-blue/40 flex items-center justify-center text-xs font-semibold text-white">
                       {enc.name.charAt(0)}
                     </div>
                     <span className="text-sm font-medium text-zinc-300 line-clamp-1">

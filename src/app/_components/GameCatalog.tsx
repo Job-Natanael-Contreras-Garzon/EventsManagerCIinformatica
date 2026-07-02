@@ -60,7 +60,7 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
       <div className="space-y-4">
         {/* Search Input */}
         <div className="relative w-full">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-zinc-500">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-brand-sky/50">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -70,7 +70,7 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
             placeholder="Buscar torneos o juegos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full min-h-[48px] pl-11 pr-4 py-2.5 bg-brand-navy/60 border border-brand-blue/45 rounded-xl text-brand-light-gray placeholder:text-brand-sky/40 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky focus-visible:border-transparent transition-all"
+            className="w-full min-h-[48px] pl-11 pr-4 py-2.5 bg-brand-dark/50 border border-brand-blue/30 rounded-xl text-white placeholder:text-white/30 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky/50 focus-visible:border-transparent transition-all"
           />
           {searchQuery && (
             <button
@@ -92,8 +92,8 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
               className={cn(
                 "snap-start shrink-0 px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl border transition-all duration-150 active:scale-95 min-h-[36px]",
                 selectedCategory === null
-                  ? "bg-brand-sky border-brand-sky text-brand-navy shadow-lg shadow-brand-navy/35 font-bold"
-                  : "bg-brand-dark/50 border-brand-blue/30 text-brand-sky hover:text-brand-light-gray"
+                  ? "bg-brand-blue border-brand-sky/40 text-white shadow-md font-bold"
+                  : "bg-brand-dark/40 border-brand-blue/25 text-white/60 hover:text-white hover:border-brand-blue/50"
               )}
             >
               Todos
@@ -105,8 +105,8 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
                 className={cn(
                   "snap-start shrink-0 px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl border transition-all duration-150 active:scale-95 min-h-[36px]",
                   selectedCategory === category
-                    ? "bg-brand-sky border-brand-sky text-brand-navy shadow-lg shadow-brand-navy/35 font-bold"
-                    : "bg-brand-dark/50 border-brand-blue/30 text-brand-sky hover:text-brand-light-gray"
+                    ? "bg-brand-blue border-brand-sky/40 text-white shadow-md font-bold"
+                    : "bg-brand-dark/40 border-brand-blue/25 text-white/60 hover:text-white hover:border-brand-blue/50"
                 )}
               >
                 {category}
@@ -117,14 +117,14 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
       </div>
 
       {/* Team vs Individual Segmented Tabs */}
-      <div className="grid grid-cols-2 p-1 bg-brand-navy/80 border border-brand-blue/30 rounded-xl">
+      <div className="grid grid-cols-2 p-1 bg-brand-dark/60 border border-brand-blue/20 rounded-xl">
         <button
           onClick={() => handleTabChange("individual")}
           className={cn(
             "w-full py-3 rounded-lg text-sm font-semibold tracking-wide transition-all duration-150 active:scale-95 min-h-[44px]",
             activeTab === "individual"
-              ? "bg-brand-blue text-white border border-brand-blue/40 shadow-md"
-              : "text-brand-sky/60 hover:text-brand-sky"
+              ? "bg-brand-blue/80 text-white shadow-md"
+              : "text-white/40 hover:text-white/70"
           )}
         >
           Individuales
@@ -134,8 +134,8 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
           className={cn(
             "w-full py-3 rounded-lg text-sm font-semibold tracking-wide transition-all duration-150 active:scale-95 min-h-[44px]",
             activeTab === "team"
-              ? "bg-brand-blue text-white border border-brand-blue/40 shadow-md"
-              : "text-brand-sky/60 hover:text-brand-sky"
+              ? "bg-brand-blue/80 text-white shadow-md"
+              : "text-white/40 hover:text-white/70"
           )}
         >
           En Equipo

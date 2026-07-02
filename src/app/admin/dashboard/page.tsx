@@ -1,6 +1,8 @@
 import { db } from "@/lib/db";
 import { RefreshButton } from "./RefreshButton";
 import Link from "next/link";
+import { logoutAction } from "@/modules/auth/actions/auth.actions";
+
 
 // Force Next.js to not cache page statically, ensuring data is fresh on reload/refresh
 export const dynamic = "force-dynamic";
@@ -96,12 +98,14 @@ export default async function AdminDashboardPage() {
           
           {/* Mobile logout or status button */}
           <div className="sm:hidden">
-            <Link
-              href="/admin/login"
-              className="text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-colors min-h-[44px] flex items-center px-2"
-            >
-              Salir
-            </Link>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition-colors min-h-[44px] flex items-center px-2 cursor-pointer border-0 bg-transparent"
+              >
+                Salir
+              </button>
+            </form>
           </div>
         </div>
 
@@ -126,14 +130,22 @@ export default async function AdminDashboardPage() {
             >
               Registrados
             </Link>
+            <Link
+              href="/admin/usuarios"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/75 hover:text-brand-sky hover:bg-brand-blue/20 border border-transparent transition-all min-h-[32px] flex items-center"
+            >
+              Usuarios
+            </Link>
           </nav>
           
-          <Link
-            href="/admin/login"
-            className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/70 hover:text-white bg-brand-dark/60 border border-brand-blue/30 hover:bg-brand-blue/60 active:scale-95 transition-all min-h-[32px]"
-          >
-            Cerrar Sesión
-          </Link>
+          <form action={logoutAction} className="hidden sm:block">
+            <button
+              type="submit"
+              className="hidden sm:inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold text-brand-sky/70 hover:text-white bg-brand-dark/60 border border-brand-blue/30 hover:bg-brand-blue/60 active:scale-95 transition-all min-h-[32px] cursor-pointer"
+            >
+              Cerrar Sesión
+            </button>
+          </form>
         </div>
       </header>
 

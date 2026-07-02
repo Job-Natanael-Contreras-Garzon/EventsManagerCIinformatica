@@ -50,20 +50,32 @@ export const eventSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal("")),
-  encargadoName: z
-    .string()
-    .max(100, "El nombre del encargado no puede superar 100 caracteres.")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
-  encargadoPhone: z
-    .string()
-    .max(20, "El celular del encargado no puede superar 20 caracteres.")
-    .optional()
-    .nullable()
-    .or(z.literal("")),
+  encargados: z
+    .array(
+      z.object({
+        name: z
+          .string()
+          .min(1, "El nombre del encargado es requerido.")
+          .max(100, "El nombre no puede superar 100 caracteres."),
+        phone: z
+          .string()
+          .min(1, "El celular del encargado es requerido.")
+          .max(20, "El celular no puede superar 20 caracteres."),
+      })
+    )
+    .min(1, "Debe haber al menos un encargado."),
   imageBase64: z.string().optional().nullable(),
 });
+
+export const categorySchema = z.object({
+  name: z
+    .string()
+    .min(3, "El nombre debe tener al menos 3 caracteres.")
+    .max(50, "El nombre no puede superar 50 caracteres."),
+});
+
+export type CategoryInput = z.infer<typeof categorySchema>;
+
 
 /** Tipo inferido del schema de entrada */
 export type EventInput = z.infer<typeof eventSchema>;

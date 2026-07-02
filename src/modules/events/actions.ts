@@ -8,7 +8,7 @@ import "server-only";
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { eventSchema, type EventInput } from "./schema";
+import { eventSchema, categorySchema, type EventInput } from "./schema";
 import type { ActionResult } from "@/modules/registration/types/action-result.types";
 
 /**
@@ -138,14 +138,12 @@ export async function upsertEvent(
     let savedEvent;
 
     // Prepare coordinator nested data if provided
-    const encargadoData = validatedInput.encargadoName && validatedInput.encargadoPhone
+    const encargadoData = validatedInput.encargados && validatedInput.encargados.length > 0
       ? {
-          create: [
-            {
-              name: validatedInput.encargadoName,
-              ...formatPhoneAndWhatsapp(validatedInput.encargadoPhone),
-            },
-          ],
+          create: validatedInput.encargados.map((enc) => ({
+            name: enc.name,
+            ...formatPhoneAndWhatsapp(enc.phone),
+          })),
         }
       : undefined;
 
@@ -279,4 +277,102 @@ export async function deleteEvent(
     };
   }
 }
+
+/**
+ * Server Action: Crea una nueva categoría de evento.
+ */
+export async function createCategory(
+  rawInput: unknown
+): Promise<ActionResult<{ id: string }>> {
+  const parsed = categorySchema.safeParse(rawInput);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "El nombre de la categoría es inválido. Por favor, revíselo.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const name = parsed.data.name.trim();
+
+    // Validar si ya existe
+    const existing = await db.category.findUnique({
+      where: { name },
+    });
+
+    if (existing) {
+      return {
+        success: false,
+        error: "Ya existe una categoría con ese nombre.",
+        fieldErrors: {
+          name: ["Este nombre de categoría ya está registrado."],
+        },
+      };
+    }
+
+    const newCategory = await db.category.create({
+      data: { name },
+    });
+
+    // Revalidar cachés
+    revalidatePath("/admin/eventos");
+    revalidatePath("/");
+    revalidatePath("/registro");
+
+    return {
+      success: true,
+      data: { id: newCategory.id },
+    };
+  } catch (error) {
+    console.error("Error al crear categoría:", error);
+    return {
+      success: false,
+      error: "Ocurrió un error interno en el servidor al intentar crear la categoría.",
+    };
+  }
+}
+
+/**
+ * Server Action: Elimina una categoría si no tiene torneos asociados.
+ */
+export async function deleteCategory(
+  id: string
+): Promise<ActionResult<{ success: boolean }>> {
+  try {
+    // Validar si tiene eventos asociados
+    const eventCount = await db.event.count({
+      where: { categoryId: id },
+    });
+
+    if (eventCount > 0) {
+      return {
+        success: false,
+        error: "No se puede eliminar la categoría porque tiene torneos asociados.",
+      };
+    }
+
+    await db.category.delete({
+      where: { id },
+    });
+
+    // Revalidar cachés
+    revalidatePath("/admin/eventos");
+    revalidatePath("/");
+    revalidatePath("/registro");
+
+    return {
+      success: true,
+      data: { success: true },
+    };
+  } catch (error) {
+    console.error("Error al eliminar la categoría:", error);
+    return {
+      success: false,
+      error: "Ocurrió un error interno al intentar eliminar la categoría.",
+    };
+  }
+}
+
 

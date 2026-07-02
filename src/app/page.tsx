@@ -17,16 +17,16 @@ export default async function Home() {
     <div className="min-h-screen bg-transparent text-brand-light-gray flex flex-col items-center selection:bg-brand-sky selection:text-brand-navy pb-safe">
       
       {/* Sticky Premium Header */}
-      <header className="sticky top-0 z-40 w-full max-w-md bg-brand-navy/80 backdrop-blur-md border-b border-brand-blue/35 px-4 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-40 w-full max-w-md bg-brand-dark/70 backdrop-blur-md border-b border-brand-blue/20 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-blue to-brand-sky flex items-center justify-center font-bold text-sm text-brand-navy shadow-md shadow-brand-sky/20">
+          <div className="w-8 h-8 rounded-lg bg-brand-blue/80 border border-brand-sky/20 flex items-center justify-center font-bold text-sm text-white shadow-sm">
             CI
           </div>
           <div>
             <h1 className="text-sm font-bold tracking-tight text-white leading-none">
               Portal de Eventos
             </h1>
-            <span className="text-[10px] text-brand-sky/60 font-medium">
+            <span className="text-[10px] text-white/40 font-medium">
               CI INGENIERÍA INFORMÁTICA
             </span>
           </div>
@@ -34,9 +34,9 @@ export default async function Home() {
         
         {/* Active PWA Indicator / Notification Hub (Static representation) */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2 py-0.5">
+          <div className="flex items-center gap-1 bg-brand-blue/20 border border-brand-sky/15 rounded-full px-2 py-0.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">
+            <span className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">
               En Vivo
             </span>
           </div>
@@ -47,13 +47,13 @@ export default async function Home() {
       <main className="w-full max-w-md px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
         
         {/* Welcoming Gradient Card */}
-        <section className="relative overflow-hidden rounded-2xl border border-brand-blue/30 bg-gradient-to-b from-brand-dark/50 to-brand-navy/20 p-5">
+        <section className="relative overflow-hidden rounded-2xl border border-brand-blue/20 bg-brand-dark/60 p-5">
           <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-sky/10 rounded-full blur-2xl" />
           <div className="relative z-10">
             <span className="text-[10px] font-bold text-brand-sky uppercase tracking-widest">
               Semana Universitaria 2026
             </span>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-white bg-clip-text bg-gradient-to-r from-white via-brand-light-gray to-brand-sky">
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-white">
               Catálogo de Torneos
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-brand-light-gray/70">
@@ -69,7 +69,7 @@ export default async function Home() {
       </main>
 
       {/* Fixed Bottom Navigation (Standard App/PWA look) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 w-full max-w-md mx-auto h-16 bg-brand-navy/90 backdrop-blur-md border-t border-brand-blue/30 flex items-center justify-around px-4">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 w-full max-w-md mx-auto h-16 bg-brand-dark/95 backdrop-blur-md border-t border-brand-blue/20 flex items-center justify-around px-4">
         
         {/* Nav Item: Catalog */}
         <button className="flex flex-col items-center justify-center gap-1 text-brand-sky w-16 h-12 transition-all duration-150 min-h-[44px]">
@@ -79,16 +79,7 @@ export default async function Home() {
           <span className="text-[9px] font-bold tracking-wider uppercase">Juegos</span>
         </button>
 
-        {/* Nav Item: Registration (Quick Redirect) */}
-        <a
-          href="/registro"
-          className="flex flex-col items-center justify-center gap-1 text-brand-sky/60 hover:text-brand-sky w-16 h-12 transition-all duration-150 min-h-[44px]"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <span className="text-[9px] font-bold tracking-wider uppercase">Registro</span>
-        </a>
+
 
         {/* Nav Item: Support */}
         <a

@@ -119,3 +119,15 @@ enum RegistrationStatus {
   CONFIRMED
   CANCELLED
 }
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+

@@ -1,18 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0e1693;
-  --foreground: #f0f0f0;
+  --background: #07102b; /* deep navy for comfortable dark background */
+  --foreground: #eef6ff; /* soft off-white for readable text */
 }
 
 @theme {
   /* Brand Colors from Graphic Line */
-  --color-brand-navy: #0e1693;
-  --color-brand-dark: #094180;
-  --color-brand-blue: #1e4074;
-  --color-brand-sky: #70a0ff;
-  --color-brand-red: #e7191f;
-  --color-brand-light-gray: #f0f0f0;
+  --color-brand-navy: #07102b; /* primary deep navy */
+  --color-brand-dark: #0b2546; /* card / surface dark */
+  --color-brand-blue: #0f62fe; /* vibrant primary blue for CTAs */
+  --color-brand-sky: #7dd3fc; /* lighter accent for highlights */
+  --color-brand-red: #ff6b6b; /* warm danger / accents */
+  --color-brand-light-gray: #e6eef8; /* gentle light gray for text */
+  --color-brand-accent: #00c2a8; /* secondary teal accent for variety */
+  --color-brand-amber: #ffb86b; /* warm secondary for callouts */
 }
 
 @theme inline {
@@ -20,13 +22,18 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular;
+  --brand-border: rgba(15,98,254,0.12);
+  --brand-surface: rgba(11,37,70,0.6);
+  --focus-ring: rgba(15,98,254,0.28);
 }
 
 body {
-  background-color: #0e1693;
+  background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* fixed radial gradient background for all devices including mobile */
@@ -34,8 +41,21 @@ body {
   position: fixed;
   inset: 0;
   z-index: -10;
-  background: radial-gradient(circle at top, #094180 0%, #0e1693 50%, #040626 100%);
+  background: radial-gradient(ellipse at 30% 18%, rgba(15,98,254,0.12) 0%, rgba(11,37,70,0.35) 35%, rgba(7,16,43,0.85) 75%, rgb(3,8,20) 100%);
   pointer-events: none;
+}
+
+/* selection for better contrast */
+::selection {
+  background: var(--color-brand-blue);
+  color: var(--color-background);
+}
+
+/* focus-visible improvements for accessibility */
+:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: 0 0 0 4px var(--focus-ring);
+  border-radius: 8px;
 }
 
 /* Custom Tailwind v4 Utilities */

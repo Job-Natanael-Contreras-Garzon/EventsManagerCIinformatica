@@ -46,6 +46,11 @@ export default async function AdminEventosPage() {
       select: {
         id: true,
         name: true,
+        _count: {
+          select: {
+            events: true,
+          },
+        },
       },
     }),
   ]);

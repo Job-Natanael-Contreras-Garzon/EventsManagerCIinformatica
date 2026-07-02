@@ -87,17 +87,17 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
   const spotsLeft = event.maxParticipants !== null ? event.maxParticipants - event.currentRegistrations : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-navy/90 backdrop-blur-md transition-opacity duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md transition-opacity duration-300">
       {/* Backdrop tap to close */}
       <div className="absolute inset-0 cursor-default" onClick={onClose} />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-md bg-brand-navy border border-brand-blue/35 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-md bg-brand-dark border border-brand-blue/25 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Close button floating at the top right */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-brand-navy/80 backdrop-blur-md text-brand-sky hover:text-white border border-brand-blue/40 flex items-center justify-center transition-all active:scale-90"
+          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-brand-dark/90 backdrop-blur-md text-white/60 hover:text-white border border-brand-blue/30 flex items-center justify-center transition-all active:scale-90"
           title="Cerrar detalles"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,7 +141,7 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
             {/* Description */}
             {event.description && (
               <div className="space-y-1.5">
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/70">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-white/40">
                   Descripción
                 </h4>
                 <p className="text-sm leading-relaxed text-brand-light-gray font-normal">
@@ -156,7 +156,7 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/60 leading-none mb-1">Fecha y Hora</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mb-1">Fecha y Hora</p>
                   <span className="font-semibold text-brand-light-gray capitalize" suppressHydrationWarning>{formattedEventDate}</span>
                 </div>
               </div>
@@ -168,7 +168,7 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/60 leading-none mb-1">Límite de Registro</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mb-1">Límite de Registro</p>
                     <span className={cn("font-semibold", isDeadlinePassed ? "text-rose-450" : "text-brand-light-gray")} suppressHydrationWarning>{formattedDeadline}</span>
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/60 leading-none mb-1">Cupos ocupados</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mb-1">Cupos ocupados</p>
                   <span className="font-semibold text-brand-light-gray">
                     {event.currentRegistrations}
                     {event.maxParticipants !== null && (
@@ -202,14 +202,14 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
             {/* Coordinadores / Encargados */}
             {event.encargados.length > 0 && (
               <div className="space-y-2.5">
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/70">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-white/40">
                   Coordinación del Torneo
                 </h4>
                 <div className="space-y-2">
                   {event.encargados.map((enc) => (
                     <div
                       key={enc.id}
-                      className="flex items-center justify-between gap-3 rounded-2xl bg-brand-dark/35 p-3 border border-brand-blue/25"
+                      className="flex items-center justify-between gap-3 rounded-2xl bg-brand-dark/60 p-3 border border-brand-blue/20"
                     >
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-full bg-brand-blue/50 border border-brand-blue/30 flex items-center justify-center text-sm font-semibold text-white">
@@ -240,7 +240,7 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
         </div>
 
         {/* Sticky Register CTA Footer */}
-        <div className="p-6 bg-brand-navy border-t border-brand-blue/25">
+        <div className="p-6 bg-brand-dark/80 border-t border-brand-blue/20">
           {isOpen ? (
             <Link
               href={`/registro?gameId=${event.id}`}
