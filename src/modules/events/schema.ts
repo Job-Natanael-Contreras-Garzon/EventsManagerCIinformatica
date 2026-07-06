@@ -76,6 +76,13 @@ export const eventSchema = z.object({
     .optional()
     .default([]),
   imageBase64: z.string().optional().nullable(),
+  /** Enlace de grupo de WhatsApp opcional */
+  whatsappGroupUrl: z
+    .string()
+    .url("El enlace del grupo de WhatsApp no es válido (debe empezar con http:// o https://).")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
 });
 
 export const categorySchema = z.object({
@@ -104,6 +111,7 @@ export const eventResponseSchema = z.object({
   date: z.string(),
   registrationDeadline: z.string().nullable(),
   winnerName: z.string().nullable().optional(),
+  whatsappGroupUrl: z.string().nullable().optional(),
 });
 
 export type EventResponse = z.infer<typeof eventResponseSchema>;

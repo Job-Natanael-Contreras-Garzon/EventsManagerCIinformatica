@@ -194,6 +194,30 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
               </div>
             )}
 
+            {/* WhatsApp Group Link if exists */}
+            {event.whatsappGroupUrl && (
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2.5xl leading-none">💬</span>
+                  <div>
+                    <span className="text-[10px] font-bold text-emerald-450 uppercase tracking-widest block">Grupo de WhatsApp</span>
+                    <span className="text-[11px] text-brand-light-gray/70">Únete al grupo oficial del torneo</span>
+                  </div>
+                </div>
+                <a
+                  href={event.whatsappGroupUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all active:scale-95 shadow-md shadow-emerald-500/10"
+                >
+                  <span>Unirse</span>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </a>
+              </div>
+            )}
+
             {/* Info Grid */}
             <div className="space-y-3.5 border-t border-b border-brand-blue/20 py-4 text-sm text-brand-light-gray/85">
               {/* Date */}

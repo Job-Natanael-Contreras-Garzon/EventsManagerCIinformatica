@@ -55,6 +55,8 @@ model Event {
   customFields         Json           @default("[]")
   /// Campos desactivados del catálogo público (array de nombres de campo)
   disabledFields       String[]       @default([])
+  /// Enlace al grupo de WhatsApp del evento
+  whatsappGroupUrl     String?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
   encargados           Encargado[]
@@ -72,14 +74,32 @@ model Encargado {
   phone       String
   /// Link directo para abrir WhatsApp: https://wa.me/{phone}
   whatsappUrl String
-  eventId     String
+  eventId     String?
+  feriaId     String?
   /// Referencia opcional al usuario del sistema (admin o coordinador)
   userId      String?
   createdAt   DateTime @default(now())
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event       Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  feria       Feria?   @relation(fields: [feriaId], references: [id], onDelete: Cascade)
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("encargados")
+}
+
+model Feria {
+  id              String      @id @default(uuid())
+  name            String
+  description     String?
+  cost            String      @default("Gratuito")
+  dates           String      // Texto descriptivo (ej: "08 al 10 de Julio")
+  registrationUrl String?     // Link de inscripción opcional
+  imageBase64     String?     // Imagen de portada (opcional)
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  encargados      Encargado[]
+
+  @@map("ferias")
 }
 
 model Participant {
@@ -174,14 +194,18 @@ model User {
 // Configuración dinámica del portal (editable desde el dashboard admin)
 // ─────────────────────────────────────────────
 model SystemConfig {
-  id          String   @id @default("default")
+  id               String   @id @default("default")
   /// Título de la sección principal (ej: "SEMANA FACULTATIVA 2026")
-  title1      String   @default("SEMANA FACULTATIVA 2026")
+  title1           String   @default("SEMANA FACULTATIVA 2026")
   /// Título secundario / heading principal (ej: "Catálogo de Eventos")
-  title2      String   @default("Catálogo de Eventos")
+  title2           String   @default("Catálogo de Eventos")
   /// Descripción del portal
-  description String   @default("Portal Oficial de Inscripcion para Actividades organizadas por el Centro Interno de Ingenieria Informatica. Encuentra todos los Eventos Disponibles, Inscribete facilmente y se parte de nuestras Actividades academicas, deportivas y culturales.")
-  updatedAt   DateTime @updatedAt
+  description      String   @default("Portal Oficial de Inscripcion para Actividades organizadas por el Centro Interno de Ingenieria Informatica. Encuentra todos los Eventos Disponibles, Inscribete facilmente y se parte de nuestras Actividades academicas, deportivas y culturales.")
+  /// Título secundario de la feria (ej: "Feria de Emprendimiento")
+  feriaTitle2      String   @default("Feria de Emprendimiento")
+  /// Descripción de la feria
+  feriaDescription String   @default("Apoya el talento local y los proyectos de nuestros estudiantes. Explora los diferentes emprendimientos de la feria, sus productos y regístrate para participar o visitarlos.")
+  updatedAt        DateTime @updatedAt
 
   @@map("system_config")
 }

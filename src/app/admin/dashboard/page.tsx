@@ -111,7 +111,7 @@ export default async function AdminDashboardPage() {
       <AdminHeader />
 
       {/* Main Admin Content Container */}
-      <main className="w-full max-w-lg px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
+      <main className="w-full max-w-lg md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
         
         {/* Title Area with Refresh Button */}
         <section className="flex items-center justify-between gap-4">
@@ -132,7 +132,7 @@ export default async function AdminDashboardPage() {
         </section>
 
         {/* 2. Tarjetas de Resumen Rápido (grid-cols-2) */}
-        <section className="grid grid-cols-2 gap-4">
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           
           {/* Card: Registered Players */}
           <article className="p-4 rounded-2xl bg-brand-dark/45 border border-brand-blue/30 relative overflow-hidden group hover:border-brand-blue/50 transition-all duration-300">
@@ -202,139 +202,143 @@ export default async function AdminDashboardPage() {
           </article>
         </section>
 
-        {/* 3. Barras de Progreso por Juego */}
-        <section className="p-5 rounded-2xl bg-brand-dark/35 border border-brand-blue/30 flex flex-col gap-4">
-          <div>
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-              Ratio de Inscripciones por Torneo
-            </h3>
-            <p className="text-xs text-brand-sky/60 mt-0.5 leading-relaxed">
-              Monitoreo del nivel de llenado para cada juego activo.
-            </p>
-          </div>
+        {/* 3 & 4. Grid responsiva lado a lado en pantallas grandes */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          
+          {/* 3. Barras de Progreso por Juego */}
+          <section className="p-5 rounded-2xl bg-brand-dark/35 border border-brand-blue/30 flex flex-col gap-4">
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                Ratio de Inscripciones por Torneo
+              </h3>
+              <p className="text-xs text-brand-sky/60 mt-0.5 leading-relaxed">
+                Monitoreo del nivel de llenado para cada juego activo.
+              </p>
+            </div>
 
-          <div className="space-y-4 pt-2">
-            {activeEvents.length > 0 ? (
-              activeEvents.map((event) => {
-                const isTeam = event.type === "TEAM";
-                const current = isTeam ? event._count.teams : event._count.registrations;
-                const max = event.maxParticipants;
-                
-                const percentage = max ? Math.min(100, Math.round((current / max) * 100)) : 0;
-                const ratioText = max 
-                  ? `${current} / ${max} ${isTeam ? "Equipos" : "Jugadores"}` 
-                  : `${current} ${isTeam ? "Equipos" : "Jugadores"}`;
+            <div className="space-y-4 pt-2">
+              {activeEvents.length > 0 ? (
+                activeEvents.map((event) => {
+                  const isTeam = event.type === "TEAM";
+                  const current = isTeam ? event._count.teams : event._count.registrations;
+                  const max = event.maxParticipants;
+                  
+                  const percentage = max ? Math.min(100, Math.round((current / max) * 100)) : 0;
+                  const ratioText = max 
+                    ? `${current} / ${max} ${isTeam ? "Equipos" : "Jugadores"}` 
+                    : `${current} ${isTeam ? "Equipos" : "Jugadores"}`;
 
-                // Color coding based on status or percentage
-                const progressColor = isTeam 
-                  ? "bg-gradient-to-r from-brand-blue to-brand-sky" 
-                  : "bg-gradient-to-r from-brand-sky to-white";
+                  // Color coding based on status or percentage
+                  const progressColor = isTeam 
+                    ? "bg-gradient-to-r from-brand-blue to-brand-sky" 
+                    : "bg-gradient-to-r from-brand-sky to-white";
 
-                return (
-                  <div key={event.id} className="space-y-2 border-b border-brand-blue/20 pb-3 last:border-b-0 last:pb-0">
-                    <div className="flex items-center justify-between text-xs gap-2">
-                      <span className="font-semibold text-brand-light-gray line-clamp-1">
-                        {event.name}
-                      </span>
-                      <span className="font-mono text-brand-light-gray/80 shrink-0 font-medium bg-brand-navy/60 px-2 py-0.5 rounded-md border border-brand-blue/30">
-                        {ratioText}
-                      </span>
+                  return (
+                    <div key={event.id} className="space-y-2 border-b border-brand-blue/20 pb-3 last:border-b-0 last:pb-0">
+                      <div className="flex items-center justify-between text-xs gap-2">
+                        <span className="font-semibold text-brand-light-gray line-clamp-1">
+                          {event.name}
+                        </span>
+                        <span className="font-mono text-brand-light-gray/80 shrink-0 font-medium bg-brand-navy/60 px-2 py-0.5 rounded-md border border-brand-blue/30">
+                          {ratioText}
+                        </span>
+                      </div>
+
+                      <div className="relative w-full bg-brand-navy h-2.5 rounded-full overflow-hidden">
+                        {max ? (
+                          <div
+                            className={`${progressColor} h-full rounded-full transition-all duration-500`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-brand-navy/40 relative">
+                            {/* Pulsing indicator for unlimited events */}
+                            <div className="absolute top-0 bottom-0 left-0 bg-brand-sky/30 w-1/3 animate-pulse rounded-full" />
+                          </div>
+                        )}
+                      </div>
                     </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-6 text-xs text-brand-sky/50 font-medium">
+                  No hay torneos activos actualmente.
+                </div>
+              )}
+            </div>
+          </section>
 
-                    <div className="relative w-full bg-brand-navy h-2.5 rounded-full overflow-hidden">
-                      {max ? (
-                        <div
-                          className={`${progressColor} h-full rounded-full transition-all duration-500`}
-                          style={{ width: `${percentage}%` }}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-brand-navy/40 relative">
-                          {/* Pulsing indicator for unlimited events */}
-                          <div className="absolute top-0 bottom-0 left-0 bg-brand-sky/30 w-1/3 animate-pulse rounded-full" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="text-center py-6 text-xs text-brand-sky/50 font-medium">
-                No hay torneos activos actualmente.
-              </div>
-            )}
-          </div>
-        </section>
+          {/* 4. Tabla Adaptativa de Registros Recientes */}
+          <section className="p-5 rounded-2xl bg-brand-dark/35 border border-brand-blue/30 flex flex-col gap-4">
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                Registros Recientes
+              </h3>
+              <p className="text-xs text-brand-sky/60 mt-0.5 leading-relaxed">
+                Listado compacto de las últimas 10 inscripciones en tiempo real.
+              </p>
+            </div>
 
-        {/* 4. Tabla Adaptativa de Registros Recientes */}
-        <section className="p-5 rounded-2xl bg-brand-dark/35 border border-brand-blue/30 flex flex-col gap-4">
-          <div>
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-              Registros Recientes
-            </h3>
-            <p className="text-xs text-brand-sky/60 mt-0.5 leading-relaxed">
-              Listado compacto de las últimas 10 inscripciones en tiempo real.
-            </p>
-          </div>
-
-          <div className="w-full overflow-hidden">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-brand-blue/20 text-[10px] font-bold uppercase tracking-wider text-brand-sky/50">
-                  <th className="py-2.5">Participante</th>
-                  <th className="py-2.5">Juego</th>
-                  <th className="py-2.5 text-center">Tipo</th>
-                  <th className="py-2.5 text-right hidden sm:table-cell">Código</th>
-                  <th className="py-2.5 text-right hidden sm:table-cell">Fecha</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-brand-blue/15 text-xs">
-                {recentRegistrations.length > 0 ? (
-                  recentRegistrations.map((reg) => {
-                    const isTeamReg = reg.teamId !== null;
-                    return (
-                      <tr key={reg.id} className="hover:bg-brand-blue/15 transition-colors">
-                        <td className="py-3 font-semibold text-brand-light-gray pr-2">
-                          <span className="line-clamp-1">{reg.participant.fullName}</span>
-                        </td>
-                        <td className="py-3 text-brand-light-gray/80 pr-2">
-                          <span className="line-clamp-1">{reg.event.name}</span>
-                        </td>
-                        <td className="py-3 text-center">
-                          {isTeamReg ? (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-brand-sky/15 text-brand-sky border border-brand-sky/25">
-                              Equipo
-                            </span>
-                          ) : (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                              Individual
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 text-right font-mono text-brand-sky/60 hidden sm:table-cell">
-                          {reg.confirmationCode}
-                        </td>
-                        <td className="py-3 text-right text-brand-sky/60 hidden sm:table-cell whitespace-nowrap">
-                          {new Date(reg.createdAt).toLocaleDateString("es-ES", {
-                            day: "2-digit",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="py-6 text-center text-xs text-brand-sky/50 font-medium">
-                      No hay inscripciones registradas todavía.
-                    </td>
+            <div className="w-full overflow-hidden">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-brand-blue/20 text-[10px] font-bold uppercase tracking-wider text-brand-sky/50">
+                    <th className="py-2.5">Participante</th>
+                    <th className="py-2.5">Juego</th>
+                    <th className="py-2.5 text-center">Tipo</th>
+                    <th className="py-2.5 text-right hidden sm:table-cell">Código</th>
+                    <th className="py-2.5 text-right hidden sm:table-cell">Fecha</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                </thead>
+                <tbody className="divide-y divide-brand-blue/15 text-xs">
+                  {recentRegistrations.length > 0 ? (
+                    recentRegistrations.map((reg) => {
+                      const isTeamReg = reg.teamId !== null;
+                      return (
+                        <tr key={reg.id} className="hover:bg-brand-blue/15 transition-colors">
+                          <td className="py-3 font-semibold text-brand-light-gray pr-2">
+                            <span className="line-clamp-1">{reg.participant.fullName}</span>
+                          </td>
+                          <td className="py-3 text-brand-light-gray/80 pr-2">
+                            <span className="line-clamp-1">{reg.event.name}</span>
+                          </td>
+                          <td className="py-3 text-center">
+                            {isTeamReg ? (
+                              <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-brand-sky/15 text-brand-sky border border-brand-sky/25">
+                                Equipo
+                              </span>
+                            ) : (
+                              <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                Individual
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 text-right font-mono text-brand-sky/60 hidden sm:table-cell">
+                            {reg.confirmationCode}
+                          </td>
+                          <td className="py-3 text-right text-brand-sky/60 hidden sm:table-cell whitespace-nowrap">
+                            {new Date(reg.createdAt).toLocaleDateString("es-ES", {
+                              day: "2-digit",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="py-6 text-center text-xs text-brand-sky/50 font-medium">
+                        No hay inscripciones registradas todavía.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
 
         {/* 5. Editor de Cabecera del Catálogo Público — Solo para Admin */}
         {!isCoordinator && systemConfig && (

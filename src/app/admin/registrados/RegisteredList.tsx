@@ -262,7 +262,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
         <AdminHeader />
 
         {/* Main Console Content */}
-        <main className="w-full max-w-lg px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
+        <main className="w-full max-w-lg md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
           
           {/* Title Area */}
           <section className="flex flex-col gap-1">
@@ -276,7 +276,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
 
           {/* Filtering Console */}
           <section className="p-4 rounded-2xl bg-brand-dark/45 border border-brand-blue/30 space-y-4">
-            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Event Selector (Dropdown) */}
               <div className="flex-1">
                 <label htmlFor="event-filter" className="block text-[10px] font-bold uppercase tracking-wider text-brand-sky/60 mb-1.5">
@@ -327,7 +327,7 @@ export function RegisteredList({ initialRegistrations, events }: RegisteredListP
               </div>
 
               {/* Column Tags (Pills for showing/hiding columns) */}
-              <div className="space-y-2 pt-1">
+              <div className="space-y-2 pt-1 md:col-span-2">
                 <span className="block text-[10px] font-bold uppercase tracking-wider text-brand-sky/70">
                   Columnas de Reporte (Tags)
                 </span>

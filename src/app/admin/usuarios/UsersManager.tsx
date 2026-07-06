@@ -182,10 +182,10 @@ export function UsersManager({ initialUsers, currentUserRole, currentUserId }: U
       <AdminHeader />
 
       {/* Main Admin Content Container */}
-      <main className="w-full max-w-lg px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
+      <main className="w-full max-w-lg md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
         
         {/* Title Area */}
-        <section className="flex items-center justify-between gap-4">
+        <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div>
             <span className="text-[10px] font-bold text-brand-sky uppercase tracking-widest">
               {currentUserRole === "ADMIN" ? "Seguridad del Sistema" : "Mi Cuenta"}
@@ -195,46 +195,48 @@ export function UsersManager({ initialUsers, currentUserRole, currentUserId }: U
             </h2>
           </div>
           
-          {/* Solo admin puede crear usuarios */}
-          {currentUserRole === "ADMIN" && (
-            <button
-              onClick={() => {
-                createForm.reset({ role: "COORDINATOR" });
-                setGeneralError(null);
-                setIsCreateOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-sky hover:from-brand-sky hover:to-brand-sky text-brand-navy font-bold text-xs shadow-md shadow-brand-sky/10 active:scale-95 hover:shadow-brand-sky/20 transition-all cursor-pointer min-h-[36px]"
-            >
-              <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              <span>Nuevo</span>
-            </button>
-          )}
+          <div className="flex gap-2 w-full sm:w-auto shrink-0">
+            {/* Solo admin puede crear usuarios */}
+            {currentUserRole === "ADMIN" && (
+              <button
+                onClick={() => {
+                  createForm.reset({ role: "COORDINATOR" });
+                  setGeneralError(null);
+                  setIsCreateOpen(true);
+                }}
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-sky hover:from-brand-sky hover:to-brand-sky text-brand-navy font-bold text-xs shadow-md shadow-brand-sky/10 active:scale-95 hover:shadow-brand-sky/20 transition-all cursor-pointer min-h-[36px] w-full sm:w-auto"
+              >
+                <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                <span>Nuevo</span>
+              </button>
+            )}
 
-          {/* Coordinador ve botón de editar su propio perfil */}
-          {currentUserRole === "COORDINATOR" && (
-            <button
-              onClick={() => {
-                const me = users.find((u) => u.id === currentUserId);
-                if (me) {
-                  profileForm.reset({ name: me.name, phone: me.phone });
-                }
-                setProfileFeedback(null);
-                setIsEditProfileOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-sky hover:from-brand-sky hover:to-brand-sky text-brand-navy font-bold text-xs shadow-md shadow-brand-sky/10 active:scale-95 hover:shadow-brand-sky/20 transition-all cursor-pointer min-h-[36px]"
-            >
-              <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              <span>Editar Perfil</span>
-            </button>
-          )}
+            {/* Coordinador ve botón de editar su propio perfil */}
+            {currentUserRole === "COORDINATOR" && (
+              <button
+                onClick={() => {
+                  const me = users.find((u) => u.id === currentUserId);
+                  if (me) {
+                    profileForm.reset({ name: me.name, phone: me.phone });
+                  }
+                  setProfileFeedback(null);
+                  setIsEditProfileOpen(true);
+                }}
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-sky hover:from-brand-sky hover:to-brand-sky text-brand-navy font-bold text-xs shadow-md shadow-brand-sky/10 active:scale-95 hover:shadow-brand-sky/20 transition-all cursor-pointer min-h-[36px] w-full sm:w-auto"
+              >
+                <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span>Editar Perfil</span>
+              </button>
+            )}
+          </div>
         </section>
 
         {/* User list */}
-        <section className="flex flex-col gap-3">
+        <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {/* Coordinadores solo ven su propio perfil */}
           {(currentUserRole === "ADMIN" ? users : users.filter((u) => u.id === currentUserId)).map((user) => {
             const initials = user.name
@@ -251,62 +253,73 @@ export function UsersManager({ initialUsers, currentUserRole, currentUserId }: U
             return (
               <article
                 key={user.id}
-                className={`p-4 rounded-2xl bg-brand-dark/45 border transition-all duration-300 flex items-center justify-between overflow-hidden relative group
+                className={`p-4 rounded-2xl bg-brand-dark/45 border transition-all duration-300 flex flex-col justify-between gap-3 overflow-hidden relative group hover:shadow-lg hover:shadow-brand-blue/5
                   ${isMe ? "border-brand-sky/40 hover:border-brand-sky/60" : "border-brand-blue/30 hover:border-brand-blue/50"}`}
               >
                 <div className="absolute top-0 right-0 -mt-2 -mr-2 w-12 h-12 bg-brand-sky/5 rounded-full blur-xl" />
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl border flex items-center justify-center font-black text-xs select-none
-                    ${isMe ? "bg-brand-sky/15 border-brand-sky/35 text-brand-sky" : "bg-brand-navy border-brand-blue/45 text-brand-sky"}`}>
-                    {initials || "US"}
+                
+                {/* Cabecera de la tarjeta: Información de usuario + Badge de Rol */}
+                <div className="flex items-start justify-between gap-3 w-full">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-10 h-10 rounded-xl border flex items-center justify-center font-black text-xs select-none shrink-0
+                      ${isMe ? "bg-brand-sky/15 border-brand-sky/35 text-brand-sky" : "bg-brand-navy border-brand-blue/45 text-brand-sky"}`}>
+                      {initials || "US"}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-bold text-white leading-tight flex items-center gap-1.5 truncate">
+                        {user.name}
+                        {isMe && (
+                          <span className="text-[9px] font-semibold text-brand-sky/60 border border-brand-sky/20 px-1.5 py-0.5 rounded-full shrink-0">
+                            Yo
+                          </span>
+                        )}
+                      </h3>
+                      <p className="text-xs text-brand-sky/70 mt-0.5 truncate" title={user.username}>{user.username}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-bold text-white leading-tight flex items-center gap-1.5 truncate">
-                      {user.name}
-                      {isMe && (
-                        <span className="text-[9px] font-semibold text-brand-sky/60 border border-brand-sky/20 px-1.5 py-0.5 rounded-full">
-                          Yo
-                        </span>
-                      )}
-                    </h3>
-                    <p className="text-xs text-brand-sky/70 mt-0.5 truncate">{user.username}</p>
-                    {user.phone && (
-                      <p className="text-[10px] text-brand-sky/40 mt-0.5">📱 {user.phone}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className={`text-[10px] font-semibold border px-2 py-1 rounded-md ${roleStyle.color}`}>
+
+                  <span className={`text-[9px] font-semibold border px-2 py-0.5 rounded-md shrink-0 uppercase tracking-wide ${roleStyle.color}`}>
                     {roleStyle.label}
                   </span>
-                  
-                  {/* Administrador puede editar cualquier usuario */}
-                  {currentUserRole === "ADMIN" && (
-                    <button
-                      onClick={() => handleEditUser(user)}
-                      disabled={isPending}
-                      className="w-8 h-8 rounded-lg bg-brand-sky/10 border border-brand-sky/25 flex items-center justify-center text-brand-sky hover:text-white hover:bg-brand-sky/80 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:scale-100"
-                      title="Editar Usuario"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </button>
-                  )}
+                </div>
 
-                  {/* Solo admin puede eliminar, y no a sí mismo */}
-                  {currentUserRole === "ADMIN" && !isMe && (
-                    <button
-                      onClick={() => handleDelete(user.id, user.name)}
-                      disabled={isPending}
-                      className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/25 flex items-center justify-center text-rose-400 hover:text-white hover:bg-rose-500/80 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:scale-100"
-                      title="Eliminar Usuario"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                {/* Pie de la tarjeta: Teléfono + Acciones */}
+                <div className="flex items-center justify-between border-t border-brand-blue/15 pt-2.5 mt-1 gap-4 w-full">
+                  {user.phone ? (
+                    <span className="text-[10px] text-brand-sky/50 truncate font-medium">📱 {user.phone}</span>
+                  ) : (
+                    <span className="text-[10px] text-brand-sky/30 italic">Sin celular</span>
                   )}
+                  
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Administrador puede editar cualquier usuario */}
+                    {currentUserRole === "ADMIN" && (
+                      <button
+                        onClick={() => handleEditUser(user)}
+                        disabled={isPending}
+                        className="w-8 h-8 rounded-lg bg-brand-sky/10 border border-brand-sky/25 flex items-center justify-center text-brand-sky hover:text-white hover:bg-brand-sky/80 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:scale-100"
+                        title="Editar Usuario"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                    )}
+    
+                    {/* Solo admin puede eliminar, y no a sí mismo */}
+                    {currentUserRole === "ADMIN" && !isMe && (
+                      <button
+                        onClick={() => handleDelete(user.id, user.name)}
+                        disabled={isPending}
+                        className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/25 flex items-center justify-center text-rose-450 hover:text-white hover:bg-rose-500/80 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:scale-100"
+                        title="Eliminar Usuario"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </article>
             );
@@ -321,8 +334,8 @@ export function UsersManager({ initialUsers, currentUserRole, currentUserId }: U
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity"
             onClick={() => setIsCreateOpen(false)}
           />
-          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-brand-blue/25 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[92vh] overflow-y-auto flex flex-col">
-            <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5 shrink-0" />
+          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-brand-blue/25 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[92vh] overflow-y-auto flex flex-col md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:border md:border-brand-blue/25 md:max-h-[90vh]">
+            <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5 shrink-0 md:hidden" />
 
             <div className="mb-6 shrink-0 flex items-center justify-between">
               <div>
@@ -474,8 +487,8 @@ export function UsersManager({ initialUsers, currentUserRole, currentUserId }: U
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity"
             onClick={() => { setIsEditUserOpen(false); setEditingUser(null); }}
           />
-          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-brand-blue/25 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[92vh] overflow-y-auto flex flex-col">
-            <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5 shrink-0" />
+          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-brand-blue/25 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[92vh] overflow-y-auto flex flex-col md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:border md:border-brand-blue/25 md:max-h-[90vh]">
+            <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5 shrink-0 md:hidden" />
 
             <div className="mb-6 shrink-0 flex items-center justify-between">
               <div>
@@ -626,8 +639,8 @@ export function UsersManager({ initialUsers, currentUserRole, currentUserId }: U
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
             onClick={() => setIsEditProfileOpen(false)}
           />
-          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-brand-blue/25 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[80vh] overflow-y-auto flex flex-col">
-            <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5 shrink-0" />
+          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-brand-blue/25 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[80vh] overflow-y-auto flex flex-col md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:border md:border-brand-blue/25 md:max-h-[90vh]">
+            <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5 shrink-0 md:hidden" />
             <div className="mb-6 shrink-0 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-black tracking-tight text-white">Editar Mi Perfil</h3>

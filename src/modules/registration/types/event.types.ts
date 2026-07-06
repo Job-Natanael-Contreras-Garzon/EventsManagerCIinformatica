@@ -58,4 +58,6 @@ export interface ActiveEvent {
   customFields: CustomFieldDTO[];
   /** Campos desactivados en la vista pública */
   disabledFields: string[];
+  /** Enlace opcional de grupo de WhatsApp */
+  whatsappGroupUrl?: string | null;
 }

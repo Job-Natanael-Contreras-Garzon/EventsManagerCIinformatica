@@ -204,6 +204,31 @@ export default async function ExitoPage({ searchParams }: PageProps) {
           ticketElementId="ticket-card"
         />
 
+        {/* WhatsApp Group Direct Link */}
+        {event.whatsappGroupUrl && (
+          <section className="w-full space-y-2">
+            <div className="pl-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-450">
+                Grupo Oficial del Torneo
+              </h3>
+              <p className="text-[11px] text-brand-sky/50 mt-0.5">
+                Únete al grupo de WhatsApp para recibir notificaciones sobre horarios, fixture y emparejamientos.
+              </p>
+            </div>
+            <a
+              href={event.whatsappGroupUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2.5 w-full min-h-[50px] rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm transition-all duration-150 active:scale-[0.98] shadow-lg shadow-emerald-500/25"
+            >
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.498 1.453 5.418 1.454 5.441.002 9.87-4.424 9.873-9.87.001-2.637-1.023-5.117-2.883-6.979C17.195 1.898 14.718.875 12.01.875c-5.445 0-9.875 4.426-9.878 9.874a9.815 9.815 0 001.488 5.16l-.974 3.56 3.65-.957z" />
+              </svg>
+              <span>Unirse al Grupo de WhatsApp</span>
+            </a>
+          </section>
+        )}
+
         {/* Action Coordinator Coordinates (Whatsapp Contact) */}
         {event.encargados.length > 0 && (
           <section className="w-full space-y-3">

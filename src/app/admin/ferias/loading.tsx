@@ -1,7 +1,7 @@
-// src/app/admin/eventos/loading.tsx
+// src/app/admin/ferias/loading.tsx
 import { AdminHeader } from "@/components/admin/AdminHeader";
 
-export default function EventosLoading() {
+export default function FeriasLoading() {
   return (
     <div className="min-h-screen bg-transparent text-brand-light-gray flex flex-col items-center pb-safe font-sans animate-pulse">
       <AdminHeader />
@@ -16,14 +16,7 @@ export default function EventosLoading() {
           <div className="h-10 w-full sm:w-28 rounded-xl bg-brand-blue/20" />
         </div>
 
-        {/* Tabs skeleton */}
-        <div className="flex gap-2">
-          {[1, 2].map((i) => (
-            <div key={i} className="h-9 w-24 rounded-lg bg-brand-blue/20" />
-          ))}
-        </div>
-
-        {/* Event cards skeleton */}
+        {/* Feria cards skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="p-4 rounded-2xl bg-brand-dark/40 border border-brand-blue/20 flex flex-col gap-3">

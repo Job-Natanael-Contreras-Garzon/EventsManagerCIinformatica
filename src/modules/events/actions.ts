@@ -213,6 +213,7 @@ export async function upsertEvent(
           winnerName,
           customFields: customFieldsJson as any,
           disabledFields: disabledFieldsArr,
+          whatsappGroupUrl: validatedInput.whatsappGroupUrl || null,
           encargados: encargadosData.length > 0
             ? { create: encargadosData }
             : undefined,
@@ -237,6 +238,7 @@ export async function upsertEvent(
           winnerName,
           customFields: customFieldsJson as any,
           disabledFields: disabledFieldsArr,
+          whatsappGroupUrl: validatedInput.whatsappGroupUrl || null,
           encargados: encargadosData.length > 0
             ? { create: encargadosData }
             : undefined,

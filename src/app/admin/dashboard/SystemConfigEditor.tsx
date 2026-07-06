@@ -8,6 +8,8 @@ interface Props {
     title1: string;
     title2: string;
     description: string;
+    feriaTitle2: string;
+    feriaDescription: string;
   };
 }
 
@@ -19,6 +21,8 @@ export function SystemConfigEditor({ initialConfig }: Props) {
   const [title1, setTitle1] = useState(initialConfig.title1);
   const [title2, setTitle2] = useState(initialConfig.title2);
   const [description, setDescription] = useState(initialConfig.description);
+  const [feriaTitle2, setFeriaTitle2] = useState(initialConfig.feriaTitle2);
+  const [feriaDescription, setFeriaDescription] = useState(initialConfig.feriaDescription);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -27,7 +31,7 @@ export function SystemConfigEditor({ initialConfig }: Props) {
     setFeedback(null);
 
     startTransition(async () => {
-      const result = await updateSystemConfig({ title1, title2, description });
+      const result = await updateSystemConfig({ title1, title2, description, feriaTitle2, feriaDescription });
       if (result.success) {
         setFeedback({ type: "success", message: "Configuración guardada correctamente." });
       } else {
@@ -81,7 +85,7 @@ export function SystemConfigEditor({ initialConfig }: Props) {
 
         <div>
           <label className="block text-[10px] font-bold text-brand-sky/60 uppercase tracking-wider mb-1">
-            Descripción
+            Descripción (Eventos)
           </label>
           <textarea
             value={description}
@@ -92,6 +96,41 @@ export function SystemConfigEditor({ initialConfig }: Props) {
             placeholder="Portal Oficial de Inscripción..."
           />
           <span className="text-[9px] text-brand-sky/40">{description.length}/500</span>
+        </div>
+
+        <div className="border-t border-brand-blue/15 pt-3 mt-1">
+          <span className="text-[9px] font-bold text-amber-400/80 uppercase tracking-widest block mb-2">
+            Sección de Feria / Emprendimientos
+          </span>
+          
+          <div className="mb-3">
+            <label className="block text-[10px] font-bold text-brand-sky/60 uppercase tracking-wider mb-1">
+              Título 2 Feria (heading principal)
+            </label>
+            <input
+              type="text"
+              value={feriaTitle2}
+              onChange={(e) => setFeriaTitle2(e.target.value)}
+              maxLength={100}
+              className="w-full px-3 py-2 rounded-lg bg-brand-navy border border-brand-blue/40 text-white text-sm focus:outline-none focus:border-brand-sky/60 transition-colors"
+              placeholder="Feria de Emprendimiento"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold text-brand-sky/60 uppercase tracking-wider mb-1">
+              Descripción Feria
+            </label>
+            <textarea
+              value={feriaDescription}
+              onChange={(e) => setFeriaDescription(e.target.value)}
+              maxLength={500}
+              rows={3}
+              className="w-full px-3 py-2 rounded-lg bg-brand-navy border border-brand-blue/40 text-white text-sm focus:outline-none focus:border-brand-sky/60 transition-colors resize-none"
+              placeholder="Apoya el talento local..."
+            />
+            <span className="text-[9px] text-brand-sky/40">{feriaDescription.length}/500</span>
+          </div>
         </div>
 
         {feedback && (

@@ -11,6 +11,8 @@ const systemConfigSchema = z.object({
   title1: z.string().min(1, "El título 1 es requerido.").max(100),
   title2: z.string().min(1, "El título 2 es requerido.").max(100),
   description: z.string().min(1, "La descripción es requerida.").max(500),
+  feriaTitle2: z.string().min(1, "El título de la feria es requerido.").max(100),
+  feriaDescription: z.string().min(1, "La descripción de la feria es requerida.").max(500),
 });
 
 export type SystemConfigInput = z.infer<typeof systemConfigSchema>;
@@ -45,11 +47,15 @@ export async function updateSystemConfig(rawInput: unknown): Promise<ActionResul
         title1: parsed.data.title1,
         title2: parsed.data.title2,
         description: parsed.data.description,
+        feriaTitle2: parsed.data.feriaTitle2,
+        feriaDescription: parsed.data.feriaDescription,
       },
       update: {
         title1: parsed.data.title1,
         title2: parsed.data.title2,
         description: parsed.data.description,
+        feriaTitle2: parsed.data.feriaTitle2,
+        feriaDescription: parsed.data.feriaDescription,
       },
     });
 
@@ -74,11 +80,13 @@ export async function getSystemConfig(): Promise<{
   title1: string;
   title2: string;
   description: string;
+  feriaTitle2: string;
+  feriaDescription: string;
 }> {
   try {
     const config = await db.systemConfig.findUnique({
       where: { id: "default" },
-      select: { title1: true, title2: true, description: true },
+      select: { title1: true, title2: true, description: true, feriaTitle2: true, feriaDescription: true },
     });
 
     if (config) return config;
@@ -92,5 +100,8 @@ export async function getSystemConfig(): Promise<{
     title2: "Catálogo de Eventos",
     description:
       "Portal Oficial de Inscripcion para Actividades organizadas por el Centro Interno de Ingenieria Informatica. Encuentra todos los Eventos Disponibles, Inscribete facilmente y se parte de nuestras Actividades academicas, deportivas y culturales.",
+    feriaTitle2: "Feria de Emprendimiento",
+    feriaDescription:
+      "Apoya el talento local y los proyectos de nuestros estudiantes. Explora los diferentes emprendimientos de la feria, sus productos y regístrate para participar o visitarlos.",
   };
 }

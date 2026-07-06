@@ -43,6 +43,7 @@ export async function getActiveEvents(): Promise<ActiveEvent[]> {
       winnerName: true,
       customFields: true,
       disabledFields: true,
+      whatsappGroupUrl: true,
       category: {
         select: { id: true, name: true },
       },
@@ -83,6 +84,7 @@ export async function getActiveEvents(): Promise<ActiveEvent[]> {
       winnerName: event.winnerName ?? null,
       customFields,
       disabledFields: event.disabledFields ?? [],
+      whatsappGroupUrl: event.whatsappGroupUrl,
       category: {
         id: event.category.id,
         name: event.category.name,

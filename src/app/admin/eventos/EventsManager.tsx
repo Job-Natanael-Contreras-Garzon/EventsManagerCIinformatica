@@ -2,9 +2,10 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { DateTimePicker } from "./DateTimePicker";
 import { eventSchema, type EventInput } from "@/modules/events/schema";
 import { upsertEvent, deleteEvent, createCategory, deleteCategory, updateEventStatus, setEventWinner } from "@/modules/events/actions";
 import { registerPlayerManually } from "@/modules/registration/actions-manual";
@@ -55,6 +56,7 @@ interface EventData {
   imageBase64: string | null;
   categoryId: string;
   winnerName: string | null;
+  whatsappGroupUrl: string | null;
   customFields: unknown;
   disabledFields: string[];
   category: { name: string };
@@ -163,6 +165,7 @@ export function EventsManager({
     formState: { errors, isSubmitting },
     setError,
     watch,
+    control,
   } = useForm<any>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
@@ -176,9 +179,10 @@ export function EventsManager({
       maxTeamMembers: 5,
       imageBase64: null,
       isActive: true,
-      date: toDatetimeLocalString(new Date(Date.now() + 86400000)),
+      date: new Date(Date.now() + 86400000).toISOString(),
       registrationDeadline: "",
       winnerName: "",
+      whatsappGroupUrl: "",
       customFields: [],
       disabledFields: [],
       encargadoUserIds: [],
@@ -227,9 +231,10 @@ export function EventsManager({
     maxTeamMembers: 5,
     imageBase64: null,
     isActive: true,
-    date: toDatetimeLocalString(new Date(Date.now() + 86400000)),
+    date: new Date(Date.now() + 86400000).toISOString(),
     registrationDeadline: "",
     winnerName: "",
+    whatsappGroupUrl: "",
     customFields: [],
     disabledFields: [],
     encargadoUserIds: [],
@@ -276,9 +281,10 @@ export function EventsManager({
       maxTeamMembers: event.maxTeamMembers ?? 5,
       imageBase64: event.imageBase64,
       isActive: event.isActive,
-      date: toDatetimeLocalString(event.date),
-      registrationDeadline: event.registrationDeadline ? toDatetimeLocalString(event.registrationDeadline) : "",
+      date: new Date(event.date).toISOString(),
+      registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString() : "",
       winnerName: event.winnerName || "",
+      whatsappGroupUrl: event.whatsappGroupUrl || "",
       customFields: fields,
       disabledFields: event.disabledFields ?? [],
       encargadoUserIds: linked,
@@ -424,10 +430,10 @@ export function EventsManager({
       
       <AdminHeader />
 
-      <main className="w-full max-w-lg px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
+      <main className="w-full max-w-lg md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto px-4 pt-6 pb-24 flex-1 flex flex-col gap-6">
         
         {/* Title Area */}
-        <section className="flex items-center justify-between gap-4">
+        <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div>
             <span className="text-[10px] font-bold text-brand-sky uppercase tracking-widest">
               {currentUserRole === "COORDINATOR" ? "Mis Eventos Asignados" : "Configuración de Torneos"}
@@ -440,7 +446,7 @@ export function EventsManager({
           {activeTab === "torneos" && currentUserRole === "ADMIN" && (
             <button
               onClick={handleNewEvent}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-blue/80 hover:bg-brand-blue active:scale-95 transition-all min-h-[40px] shadow-md border border-brand-sky/20"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-blue/80 hover:bg-brand-blue active:scale-95 transition-all min-h-[40px] shadow-md border border-brand-sky/20 w-full sm:w-auto shrink-0"
             >
               <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
@@ -478,7 +484,7 @@ export function EventsManager({
 
         {/* Torneos View */}
         {activeTab === "torneos" && (
-          <section className="flex flex-col gap-3">
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {initialEvents.length > 0 ? (
               initialEvents.map((event) => {
                 const isTeam = event.type === "TEAM";
@@ -611,8 +617,8 @@ export function EventsManager({
 
         {/* Categorías View — Admin only */}
         {activeTab === "categorias" && currentUserRole === "ADMIN" && (
-          <section className="flex flex-col gap-6">
-            <div className="p-5 rounded-2xl bg-brand-dark/70 border border-brand-blue/20 flex flex-col gap-3.5">
+          <section className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            <div className="md:col-span-5 p-5 rounded-2xl bg-brand-dark/70 border border-brand-blue/20 flex flex-col gap-3.5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-brand-sky/80">
                 Crear Nueva Categoría
               </h3>
@@ -635,7 +641,7 @@ export function EventsManager({
               {categoryError && <p className="text-[10px] text-rose-500 font-semibold" role="alert">{categoryError}</p>}
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="md:col-span-7 flex flex-col gap-3">
               <h3 className="text-[10px] font-bold uppercase tracking-widest text-brand-sky/60 px-1">
                 Categorías Existentes
               </h3>
@@ -679,8 +685,8 @@ export function EventsManager({
       {winnerModalEvent && (
         <>
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={() => setWinnerModalEvent(null)} />
-          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-amber-500/30 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[60vh] overflow-y-auto flex flex-col">
-            <div className="w-12 h-1 bg-amber-500/30 rounded-full mx-auto mb-5" />
+          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-amber-500/30 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[60vh] overflow-y-auto flex flex-col md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:border md:border-amber-500/30 md:max-h-[90vh]">
+            <div className="w-12 h-1 bg-amber-500/30 rounded-full mx-auto mb-5 md:hidden" />
             <h3 className="text-lg font-black tracking-tight text-white mb-1">🏆 Establecer Ganador</h3>
             <p className="text-xs text-brand-sky/60 mb-5">{winnerModalEvent.name}</p>
             <div className="flex flex-col gap-3">
@@ -718,8 +724,8 @@ export function EventsManager({
       {manualRegEvent && (
         <>
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={() => setManualRegEvent(null)} />
-          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-brand-blue/25 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[88vh] overflow-y-auto flex flex-col">
-            <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5" />
+          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-brand-blue/25 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[88vh] overflow-y-auto flex flex-col md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:border md:border-brand-blue/25 md:max-h-[90vh]">
+            <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5 md:hidden" />
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-black tracking-tight text-white">Registro Manual</h3>
@@ -814,8 +820,8 @@ export function EventsManager({
       {isOpen && (
         <>
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={() => setIsOpen(false)} />
-          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-brand-blue/25 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[92vh] overflow-y-auto flex flex-col">
-            <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5 shrink-0" />
+          <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-brand-blue/25 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[92vh] overflow-y-auto flex flex-col md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:border md:border-brand-blue/25 md:max-h-[90vh] md:w-full md:max-w-xl">
+            <div className="w-12 h-1 bg-brand-blue/30 rounded-full mx-auto mb-5 shrink-0 md:hidden" />
 
             <div className="mb-6 shrink-0 flex items-center justify-between">
               <div>
@@ -980,19 +986,30 @@ export function EventsManager({
 
               {/* Fechas */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="date">Fecha del Evento</label>
-                  <input id="date" type="datetime-local" {...register("date")} className="w-full min-h-[44px] px-3.5 rounded-xl bg-brand-navy/60 border border-brand-blue/30 text-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all" />
-                  {(errors.date as any)?.message && (
-                    <p className="text-[10px] text-rose-500 font-semibold" role="alert">
-                      {(errors.date as any).message}
-                    </p>
+                <Controller
+                  control={control}
+                  name="date"
+                  render={({ field }) => (
+                    <DateTimePicker
+                      label="Fecha del Evento"
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={(errors.date as any)?.message}
+                    />
                   )}
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="registrationDeadline">Límite Registro</label>
-                  <input id="registrationDeadline" type="datetime-local" {...register("registrationDeadline")} className="w-full min-h-[44px] px-3.5 rounded-xl bg-brand-navy/60 border border-brand-blue/30 text-white text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all" />
-                </div>
+                />
+                <Controller
+                  control={control}
+                  name="registrationDeadline"
+                  render={({ field }) => (
+                    <DateTimePicker
+                      label="Límite Registro"
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={(errors.registrationDeadline as any)?.message}
+                    />
+                  )}
+                />
               </div>
 
               {/* Ganador opcional */}
@@ -1007,6 +1024,25 @@ export function EventsManager({
                   {...register("winnerName")}
                   className="w-full min-h-[44px] px-3.5 rounded-xl bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
                 />
+              </div>
+
+              {/* Enlace de Grupo de WhatsApp */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-brand-sky/80" htmlFor="whatsappGroupUrl">
+                  Enlace del Grupo de WhatsApp (opcional)
+                </label>
+                <input
+                  id="whatsappGroupUrl"
+                  type="url"
+                  placeholder="Ej. https://chat.whatsapp.com/..."
+                  {...register("whatsappGroupUrl")}
+                  className="w-full min-h-[44px] px-3.5 rounded-xl bg-brand-navy/60 border border-brand-blue/30 text-white placeholder:text-brand-sky/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky transition-all"
+                />
+                {(errors.whatsappGroupUrl as any)?.message && (
+                  <p className="text-[10px] text-rose-500 font-semibold" role="alert">
+                    {(errors.whatsappGroupUrl as any).message}
+                  </p>
+                )}
               </div>
 
               {/* Encargados — Selector de usuarios del sistema */}

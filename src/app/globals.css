@@ -74,3 +74,4 @@ body {
 @utility pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
 }
+/* Force JIT compilation reload for responsive utility injections */

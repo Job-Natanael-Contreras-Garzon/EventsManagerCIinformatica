@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { logoutAction } from "@/modules/auth/actions/auth.actions";
 import { NotificationBell } from "./NotificationBell";
 
-type AdminPage = "dashboard" | "eventos" | "registrados" | "usuarios";
+type AdminPage = "dashboard" | "eventos" | "ferias" | "registrados" | "usuarios";
 
 interface NavItem {
   href: string;
@@ -43,6 +43,21 @@ const NAV_ITEMS: NavItem[] = [
           strokeLinejoin="round"
           strokeWidth="1.8"
           d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+        />
+      </svg>
+    ),
+  },
+  {
+    href: "/admin/ferias",
+    label: "Ferias",
+    page: "ferias",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.8"
+          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
         />
       </svg>
     ),
@@ -122,7 +137,7 @@ export function AdminHeader() {
       {/* ──────────────────────────────────────── */}
       <header
         ref={menuRef}
-        className="sticky top-0 z-40 w-full max-w-lg"
+        className="sticky top-0 z-40 w-full max-w-lg md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto"
       >
         {/* Main bar */}
         <div className="bg-brand-navy/85 backdrop-blur-md border-b border-brand-blue/35 px-4 py-3 flex items-center justify-between">
