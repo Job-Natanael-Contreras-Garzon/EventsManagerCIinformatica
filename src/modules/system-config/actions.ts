@@ -89,7 +89,15 @@ export async function getSystemConfig(): Promise<{
       select: { title1: true, title2: true, description: true, feriaTitle2: true, feriaDescription: true },
     });
 
-    if (config) return config;
+    if (config) {
+      return {
+        title1: config.title1 || "SEMANA FACULTATIVA 2026",
+        title2: config.title2 || "Catálogo de Eventos",
+        description: config.description || "Portal Oficial de Inscripcion para Actividades organizadas por el Centro Interno de Ingenieria Informatica.",
+        feriaTitle2: config.feriaTitle2 || "Feria de Emprendimiento",
+        feriaDescription: config.feriaDescription || "Apoya el talento local y los proyectos de nuestros estudiantes.",
+      };
+    }
   } catch (error) {
     console.error("[SystemConfig] Error al obtener configuración:", error);
   }

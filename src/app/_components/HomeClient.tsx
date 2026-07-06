@@ -68,16 +68,18 @@ export function HomeClient({
       <main className="w-full max-w-md px-4 pt-6 pb-24 flex-1 flex flex-col gap-6 overflow-y-auto scrollbar-none">
         
         {/* Welcoming Gradient Card */}
-        <section className="relative overflow-hidden rounded-2xl border border-brand-blue/20 bg-brand-dark/60 p-5">
-          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-sky/10 rounded-full blur-2xl" />
-          <div className="relative z-10">
-            <span className="text-[10px] font-bold text-brand-sky uppercase tracking-widest">
+        <section className="relative overflow-hidden rounded-2xl border border-brand-blue/30 bg-gradient-to-b from-brand-dark/80 via-brand-dark/55 to-brand-navy/30 p-5 shadow-lg shadow-brand-navy/40 shrink-0">
+          <div className="absolute top-0 right-0 -mt-6 -mr-6 w-28 h-28 bg-brand-blue/15 rounded-full blur-2xl animate-pulse" />
+          <div className="absolute bottom-0 left-0 -mb-6 -ml-6 w-24 h-24 bg-brand-sky/5 rounded-full blur-xl" />
+          
+          <div className="relative z-10 space-y-1.5">
+            <span className="text-[9px] font-black text-brand-sky uppercase tracking-widest bg-brand-sky/10 px-2.5 py-0.5 rounded-full border border-brand-sky/20 inline-block">
               {systemConfig.title1}
             </span>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-white">
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight">
               {activeMainTab === "eventos" ? systemConfig.title2 : systemConfig.feriaTitle2}
             </h2>
-            <p className="mt-2 text-xs leading-relaxed text-brand-light-gray/70">
+            <p className="text-xs leading-relaxed text-brand-light-gray/80 pt-0.5">
               {activeMainTab === "eventos" 
                 ? systemConfig.description 
                 : systemConfig.feriaDescription}

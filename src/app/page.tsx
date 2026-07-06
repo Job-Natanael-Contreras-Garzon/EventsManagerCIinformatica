@@ -4,8 +4,7 @@ import { getActiveFerias } from "@/modules/ferias/services";
 import { getSystemConfig } from "@/modules/system-config/actions";
 import { HomeClient } from "./_components/HomeClient";
 
-// Set dynamic page caching behavior or ISR if desired
-export const revalidate = 60; // Revalidate every minute
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Eventos y Ferias | CI Informática",
@@ -25,11 +24,11 @@ export default async function Home() {
       initialEvents={events}
       initialFerias={ferias}
       systemConfig={{
-        title1: config.title1,
-        title2: config.title2,
-        description: config.description,
-        feriaTitle2: config.feriaTitle2,
-        feriaDescription: config.feriaDescription,
+        title1: config.title1 || "SEMANA FACULTATIVA 2026",
+        title2: config.title2 || "Catálogo de Eventos",
+        description: config.description || "Portal Oficial de Inscripcion para Actividades organizadas por el Centro Interno de Ingenieria Informatica.",
+        feriaTitle2: config.feriaTitle2 || "Feria de Emprendimiento",
+        feriaDescription: config.feriaDescription || "Apoya el talento local y los proyectos de nuestros estudiantes.",
       }}
     />
   );
