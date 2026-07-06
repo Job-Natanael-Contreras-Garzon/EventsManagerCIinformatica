@@ -7,6 +7,7 @@ import { z } from "zod";
 import { getCurrentUser } from "@/modules/auth/utils/session";
 import { generateConfirmationCode } from "@/modules/registration/utils/confirmation-code";
 import type { ActionResult } from "@/modules/registration/types/action-result.types";
+import { notifyNewRegistration, notifyEventFull } from "@/modules/notifications/services/push.service";
 
 /**
  * Schema para el registro manual de participantes por admin/coordinador.
@@ -205,6 +206,14 @@ export async function registerPlayerManually(
     revalidatePath("/admin/registrados");
     revalidatePath("/admin/dashboard");
     revalidatePath("/");
+
+    // Disparar notificaciones push en segundo plano
+    notifyNewRegistration(result.confirmationCode).catch((err) =>
+      console.error("[Manual Registration Action] Error al enviar notificación de nuevo registro:", err)
+    );
+    notifyEventFull(input.eventId).catch((err) =>
+      console.error("[Manual Registration Action] Error al enviar notificación de evento lleno:", err)
+    );
 
     return { success: true, data: { confirmationCode: result.confirmationCode } };
   } catch (error) {

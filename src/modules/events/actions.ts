@@ -64,8 +64,15 @@ export async function upsertEvent(
 
   const validatedInput: EventInput = parsed.data;
 
-  // Si es coordinador, verificar que esté asignado al evento que edita
-  if (currentUser.role === "COORDINATOR" && validatedInput.id) {
+  // Si es coordinador, no puede crear eventos. Si es edición, debe estar asignado.
+  if (currentUser.role === "COORDINATOR") {
+    if (!validatedInput.id) {
+      return {
+        success: false,
+        error: "Acceso denegado. Solo los administradores pueden crear nuevos torneos.",
+      };
+    }
+
     const assigned = await db.encargado.findFirst({
       where: { eventId: validatedInput.id, userId: currentUser.userId },
       select: { id: true },

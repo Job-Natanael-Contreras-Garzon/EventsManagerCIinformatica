@@ -13,6 +13,7 @@ import { isRegistrationError } from "./utils/errors";
 import { registrationLogger } from "./utils/logger";
 import type { ActionResult } from "./types/action-result.types";
 import type { RegistrationInput, RegistrationResponse } from "./schema";
+import { notifyNewRegistration, notifyEventFull } from "@/modules/notifications/services/push.service";
 
 /**
  * Server Action: Inscribe a un jugador/participante en un evento.
@@ -61,6 +62,14 @@ export async function registerPlayer(
       eventId: validatedInput.eventId,
       registrationType: validatedInput.registrationType,
     });
+
+    // Disparar notificaciones push en segundo plano
+    notifyNewRegistration(response.confirmationCode).catch((err) =>
+      console.error("[Registration Action] Error al enviar notificación de nuevo registro:", err)
+    );
+    notifyEventFull(validatedInput.eventId).catch((err) =>
+      console.error("[Registration Action] Error al enviar notificación de evento lleno:", err)
+    );
 
     return { success: true, data: response };
   } catch (error) {

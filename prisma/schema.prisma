@@ -41,6 +41,7 @@ model Event {
   isActive             Boolean        @default(true)
   registrationDeadline DateTime?
   maxParticipants      Int?
+  startReminderSent    Boolean        @default(false)
   maxTeamMembers       Int            @default(5)
   imageBase64          String?
   categoryId           String
@@ -163,6 +164,7 @@ model User {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   encargados Encargado[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
 }
@@ -182,4 +184,20 @@ model SystemConfig {
   updatedAt   DateTime @updatedAt
 
   @@map("system_config")
+}
+
+// ─────────────────────────────────────────────
+// Model: PushSubscription
+// Suscripciones a notificaciones push por dispositivo del usuario
+// ─────────────────────────────────────────────
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
 }

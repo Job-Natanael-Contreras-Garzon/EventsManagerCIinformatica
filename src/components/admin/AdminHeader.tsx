@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/modules/auth/actions/auth.actions";
+import { NotificationBell } from "./NotificationBell";
 
 type AdminPage = "dashboard" | "eventos" | "registrados" | "usuarios";
 
@@ -173,6 +174,9 @@ export function AdminHeader() {
                 Cerrar Sesión
               </button>
             </form>
+
+            {/* Campana de Notificaciones Push */}
+            <NotificationBell />
 
             {/* ── Hamburger button — only on mobile ── */}
             <button
