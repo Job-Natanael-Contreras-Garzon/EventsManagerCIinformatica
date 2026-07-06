@@ -1,4 +1,5 @@
 import { getActiveEvents } from "@/modules/registration/services";
+import { getSystemConfig } from "@/modules/system-config/actions";
 import { GameCatalog } from "./_components/GameCatalog";
 
 // Set dynamic page caching behavior or ISR if desired
@@ -10,8 +11,12 @@ export const metadata = {
 };
 
 export default async function Home() {
-  // Direct Server-side Database fetch
-  const events = await getActiveEvents();
+  // Concurrent data fetching
+  const [events, config] = await Promise.all([
+    getActiveEvents(),
+    getSystemConfig(),
+  ]);
+
 
   return (
     <div className="min-h-screen bg-transparent text-brand-light-gray flex flex-col items-center selection:bg-brand-sky selection:text-brand-navy pb-safe">
@@ -58,14 +63,13 @@ export default async function Home() {
           <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-brand-sky/10 rounded-full blur-2xl" />
           <div className="relative z-10">
             <span className="text-[10px] font-bold text-brand-sky uppercase tracking-widest">
-              Semana Facultativa 2026
+              {config.title1}
             </span>
             <h2 className="mt-1 text-2xl font-black tracking-tight text-white">
-              Catálogo de Eventos
+              {config.title2}
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-brand-light-gray/70">
-              Portal Oficial de Inscripcion para Actividades organizadas por el Centro Interno de Ingenieria Informatica.
-              Encuentra todos los Eventos Disponibles, Inscribete facilmente y se parte de nuestras Actividades academicas, deportivas y culturales.
+              {config.description}
             </p>
           </div>
         </section>

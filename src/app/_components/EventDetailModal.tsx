@@ -12,6 +12,12 @@ interface EventDetailModalProps {
   onClose: () => void;
 }
 
+const GENDER_LABELS: Record<string, string> = {
+  BOTH: "Mixto",
+  WOMEN: "Femenino",
+  MEN: "Masculino",
+};
+
 export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -47,7 +53,13 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
 
   const isDeadlinePassed = deadline ? deadline < now : false;
   const isFull = event.maxParticipants !== null && event.currentRegistrations >= event.maxParticipants;
-  const isOpen = event.isActive && !isDeadlinePassed && !isFull;
+  
+  // Status check:
+  const isFinished = event.status === "FINISHED";
+  const isInProgress = event.status === "IN_PROGRESS";
+  
+  // Registration availability
+  const isOpen = event.isActive && !isDeadlinePassed && !isFull && !isFinished;
 
   // Formatting date
   const formattedEventDate = eventDate.toLocaleDateString("es-ES", {
@@ -72,9 +84,16 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
   // Status Badge details
   let statusText = "Inscripción Abierta";
   let statusClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-  if (!event.isActive) {
-    statusText = "Cerrado";
-    statusClass = "bg-zinc-800 text-zinc-400 border-zinc-700";
+
+  if (isFinished) {
+    statusText = "Finalizado";
+    statusClass = "bg-zinc-850 text-zinc-400 border-zinc-700";
+  } else if (isInProgress) {
+    statusText = "🔴 En Curso";
+    statusClass = "bg-cyan-500/10 text-cyan-400 border-cyan-500/30 animate-pulse";
+  } else if (!event.isActive) {
+    statusText = "Inscripción Cerrada";
+    statusClass = "bg-rose-500/10 text-rose-400 border-rose-500/25";
   } else if (isDeadlinePassed) {
     statusText = "Plazo Vencido";
     statusClass = "bg-rose-500/10 text-rose-400 border-rose-500/20";
@@ -83,11 +102,20 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
     statusClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
   }
 
+  // Hiding fields check
+  const isDescriptionHidden = event.disabledFields?.includes("description");
+  const isCategoryHidden = event.disabledFields?.includes("category");
+  const isDateHidden = event.disabledFields?.includes("date");
+  const isDeadlineHidden = event.disabledFields?.includes("registrationDeadline");
+  const isOccupancyHidden = event.disabledFields?.includes("occupancy");
+  const isCoordinatorsHidden = event.disabledFields?.includes("coordinators");
+  const isGenderHidden = event.disabledFields?.includes("gender");
+
   // Calculate spots left
   const spotsLeft = event.maxParticipants !== null ? event.maxParticipants - event.currentRegistrations : null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md transition-opacity duration-300">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm transition-opacity duration-300">
       {/* Backdrop tap to close */}
       <div className="absolute inset-0 cursor-default" onClick={onClose} />
 
@@ -110,7 +138,6 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
           {/* Full Resolution Flyer Image */}
           {event.imageBase64 && (
             <div className="w-full aspect-square bg-brand-dark/40 border-b border-brand-blue/20 relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`data:image/webp;base64,${event.imageBase64}`}
                 alt={event.name}
@@ -121,48 +148,69 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
 
           {/* Details Body */}
           <div className="p-6 space-y-6">
+            
+            {/* Winner Box if exists */}
+            {isFinished && event.winnerName && (
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3">
+                <span className="text-2xl">🏆</span>
+                <div>
+                  <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest block">Ganador del Torneo</span>
+                  <span className="text-sm font-black text-white">{event.winnerName}</span>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
               {/* Header Badges */}
               <div className="flex items-center gap-2 flex-wrap">
-                <span className={cn("px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider", styles.badge)}>
-                  {event.category.name}
-                </span>
+                {!isCategoryHidden && (
+                  <span className={cn("px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider", styles.badge)}>
+                    {event.category.name}
+                  </span>
+                )}
                 <span className={cn("px-2.5 py-0.5 rounded-full text-[10px] font-bold border", statusClass)}>
                   {statusText}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border bg-brand-navy/60 border-brand-blue/30 text-brand-sky uppercase tracking-wider">
+                  {event.type === "TEAM" ? "Equipo" : event.type === "OPEN" ? "Abierto" : "Individual"}
                 </span>
               </div>
 
               {/* Title */}
-              <h3 className="text-2xl font-black tracking-tight text-white">
+              <h3 className="text-2xl font-black tracking-tight text-white leading-tight">
                 {event.name}
               </h3>
             </div>
 
             {/* Description */}
-            {event.description && (
+            {!isDescriptionHidden && event.description && (
               <div className="space-y-1.5">
                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-white/40">
                   Descripción
                 </h4>
-                <p className="text-sm leading-relaxed text-brand-light-gray font-normal">
+                <p className="text-sm leading-relaxed text-brand-light-gray font-normal whitespace-pre-line">
                   {event.description}
                 </p>
               </div>
-            )}            {/* Info Grid */}
-            <div className="space-y-3 border-t border-b border-brand-blue/20 py-4 text-sm text-brand-light-gray/80">
+            )}
+
+            {/* Info Grid */}
+            <div className="space-y-3.5 border-t border-b border-brand-blue/20 py-4 text-sm text-brand-light-gray/85">
               {/* Date */}
-              <div className="flex items-start gap-3">
-                <svg className={cn("w-5 h-5 shrink-0 mt-0.5", styles.accent)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mb-1">Fecha y Hora</p>
-                  <span className="font-semibold text-brand-light-gray capitalize" suppressHydrationWarning>{formattedEventDate}</span>
+              {!isDateHidden && (
+                <div className="flex items-start gap-3">
+                  <svg className={cn("w-5 h-5 shrink-0 mt-0.5", styles.accent)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mb-1">Fecha y Hora</p>
+                    <span className="font-semibold text-brand-light-gray capitalize" suppressHydrationWarning>{formattedEventDate}</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Registration Deadline */}
-              {formattedDeadline && (
+              {!isDeadlineHidden && formattedDeadline && event.type !== "OPEN" && (
                 <div className="flex items-start gap-3">
                   <svg className={cn("w-5 h-5 shrink-0 mt-0.5", isDeadlinePassed ? "text-rose-450" : "text-brand-sky/40")} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -175,32 +223,55 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
               )}
 
               {/* Spots Counter */}
-              <div className="flex items-start gap-3">
-                <svg className={cn("w-5 h-5 shrink-0 mt-0.5", styles.accent)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mb-1">Cupos ocupados</p>
-                  <span className="font-semibold text-brand-light-gray">
-                    {event.currentRegistrations}
-                    {event.maxParticipants !== null && (
-                      <>
-                        {" "}
-                        / <span className="text-brand-sky/60">{event.maxParticipants} max</span>
-                      </>
-                    )}
-                    {spotsLeft !== null && spotsLeft > 0 && spotsLeft <= 4 && (
-                      <span className="ml-2 text-xs font-semibold text-amber-400 animate-pulse">
-                        (¡Solo {spotsLeft} cupos!)
-                      </span>
-                    )}
-                  </span>
+              {!isOccupancyHidden && event.type !== "OPEN" && (
+                <div className="flex items-start gap-3">
+                  <svg className={cn("w-5 h-5 shrink-0 mt-0.5", styles.accent)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mb-1">
+                      {event.type === "TEAM" ? "Equipos registrados" : "Jugadores inscritos"}
+                    </p>
+                    <span className="font-semibold text-brand-light-gray">
+                      {event.currentRegistrations}
+                      {event.maxParticipants !== null && (
+                        <> / <span className="text-brand-sky/60">{event.maxParticipants} max</span></>
+                      )}
+                      {spotsLeft !== null && spotsLeft > 0 && spotsLeft <= 4 && (
+                        <span className="ml-2 text-xs font-semibold text-amber-400 animate-pulse">
+                          (¡Solo {spotsLeft} cupos!)
+                        </span>
+                      )}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Gender badge */}
+              {!isGenderHidden && (
+                <div className="flex items-start gap-3">
+                  <span className="text-lg w-5 h-5 shrink-0 mt-0.5 text-center leading-none">⚧️</span>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mb-1">Categoría Género</p>
+                    <span className="font-semibold text-brand-light-gray">{GENDER_LABELS[event.gender] ?? "Mixto"}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Custom fields print inside detail modal */}
+              {event.customFields.map((field, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <span className="text-lg w-5 h-5 shrink-0 mt-0.5 text-center leading-none">📌</span>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mb-1">{field.label}</p>
+                    <span className="font-semibold text-white">{field.value}</span>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Coordinadores / Encargados */}
-            {event.encargados.length > 0 && (
+            {!isCoordinatorsHidden && event.encargados.length > 0 && (
               <div className="space-y-2.5">
                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-white/40">
                   Coordinación del Torneo
@@ -224,7 +295,7 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
                         href={enc.whatsappUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-450 border border-emerald-500/20 text-xs font-bold transition-all active:scale-95"
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-bold transition-all active:scale-95"
                       >
                         <svg className="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.498 1.453 5.418 1.454 5.441.002 9.87-4.424 9.873-9.87.001-2.637-1.023-5.117-2.883-6.979C17.195 1.898 14.718.875 12.01.875c-5.445 0-9.875 4.426-9.878 9.874a9.815 9.815 0 001.488 5.16l-.974 3.56 3.65-.957z" />
@@ -241,7 +312,11 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
 
         {/* Sticky Register CTA Footer */}
         <div className="p-6 bg-brand-dark/80 border-t border-brand-blue/20">
-          {isOpen ? (
+          {event.type === "OPEN" ? (
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-center text-xs font-bold text-amber-400">
+              ℹ️ Actividad abierta de libre participación. No requiere registro.
+            </div>
+          ) : isOpen ? (
             <Link
               href={`/registro?gameId=${event.id}`}
               className={cn(
@@ -256,7 +331,9 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
               disabled
               className="flex items-center justify-center w-full min-h-[48px] rounded-xl bg-brand-dark/40 border border-brand-blue/30 text-brand-light-gray/40 text-sm font-semibold cursor-not-allowed"
             >
-              {isDeadlinePassed
+              {isFinished
+                ? "Evento Finalizado"
+                : isDeadlinePassed
                 ? "Inscripciones cerradas"
                 : isFull
                 ? "Sin cupos disponibles"

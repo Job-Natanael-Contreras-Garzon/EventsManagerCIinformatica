@@ -1,6 +1,7 @@
 // src/app/admin/registrados/page.tsx
 import { db } from "@/lib/db";
 import { RegisteredList } from "./RegisteredList";
+import { getCurrentUser } from "@/modules/auth/utils/session";
 
 export const dynamic = "force-dynamic";
 
@@ -10,19 +11,36 @@ export const metadata = {
 };
 
 export default async function AdminRegistradosPage() {
+  const currentUser = await getCurrentUser();
+  const isCoordinator = currentUser?.role === "COORDINATOR";
+
+  // Filtrar inscripciones según el rol: coordinadores solo ven sus eventos asignados
+  const registrationWhere = isCoordinator && currentUser
+    ? {
+        event: {
+          encargados: {
+            some: { userId: currentUser.userId },
+          },
+        },
+      }
+    : {};
+
+  const eventWhere = isCoordinator && currentUser
+    ? {
+        encargados: {
+          some: { userId: currentUser.userId },
+        },
+      }
+    : {};
+
   // Query registrations and events concurrently for faster load times
   const [registrations, events] = await Promise.all([
     db.registration.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
+      where: registrationWhere,
+      orderBy: { createdAt: "desc" },
       include: {
         event: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
+          select: { id: true, name: true, description: true },
         },
         participant: {
           select: {
@@ -34,26 +52,18 @@ export default async function AdminRegistradosPage() {
           },
         },
         team: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
+          select: { id: true, name: true, code: true },
         },
       },
     }),
     db.event.findMany({
-      orderBy: {
-        name: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-      },
+      where: eventWhere,
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
     }),
   ]);
 
-  // Convert Date objects to strings/dates safely for the Client Component
+  // Convert Date objects to strings safely for the Client Component
   const formattedRegistrations = registrations.map((reg) => ({
     id: reg.id,
     confirmationCode: reg.confirmationCode,

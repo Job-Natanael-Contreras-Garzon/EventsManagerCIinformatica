@@ -8,6 +8,15 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// ─────────────────────────────────────────────
+// Enum: Role
+// Roles de usuario del sistema
+// ─────────────────────────────────────────────
+enum Role {
+  ADMIN
+  COORDINATOR
+}
+
 model Category {
   id        String   @id @default(uuid())
   name      String   @unique
@@ -21,14 +30,30 @@ model Event {
   id                   String         @id @default(uuid())
   name                 String
   description          String?
+  /// Tipo: INDIVIDUAL, TEAM, OPEN (informativo, sin inscripciones)
   type                 String         @default("INDIVIDUAL")
+  /// Estado del evento: AVAILABLE (próximo), IN_PROGRESS (en curso), FINISHED (finalizado)
+  status               String         @default("AVAILABLE")
+  /// Género al que va dirigido: WOMEN, MEN, BOTH
+  gender               String         @default("BOTH")
   date                 DateTime
+  /// Controla si las inscripciones están abiertas o cerradas (independiente del status)
   isActive             Boolean        @default(true)
   registrationDeadline DateTime?
   maxParticipants      Int?
   maxTeamMembers       Int            @default(5)
   imageBase64          String?
   categoryId           String
+  /// Nombre del ganador o equipo ganador (opcional, no aplica a conferencias/OPEN)
+  winnerName           String?
+  /// ID del participante ganador (opcional)
+  winnerParticipantId  String?
+  /// ID del equipo ganador (opcional)
+  winnerTeamId         String?
+  /// Campos dinámicos adicionales en formato JSON: [{ label, value }]
+  customFields         Json           @default("[]")
+  /// Campos desactivados del catálogo público (array de nombres de campo)
+  disabledFields       String[]       @default([])
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
   encargados           Encargado[]
@@ -47,8 +72,11 @@ model Encargado {
   /// Link directo para abrir WhatsApp: https://wa.me/{phone}
   whatsappUrl String
   eventId     String
+  /// Referencia opcional al usuario del sistema (admin o coordinador)
+  userId      String?
   createdAt   DateTime @default(now())
   event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("encargados")
 }
@@ -56,7 +84,7 @@ model Encargado {
 model Participant {
   id            String         @id @default(uuid())
   fullName      String
-  /// Correo electrónico — unique cuando está presente, nullable
+  /// Correo electrónico — único cuando está presente, nullable
   email         String?        @unique
   /// Código universitario de identificación (ej: 20231234)
   registerCode  String         @unique
@@ -76,6 +104,8 @@ model Registration {
   status           RegistrationStatus @default(PENDING)
   participantId    String
   eventId          String
+  /// Indica si fue un registro manual por admin/coordinador
+  isManual         Boolean            @default(false)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   event            Event              @relation(fields: [eventId], references: [id])
@@ -122,13 +152,34 @@ enum RegistrationStatus {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   name      String
-  username  String   @unique
+  username  String     @unique
   password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  /// Rol del usuario en el sistema
+  role      Role       @default(ADMIN)
+  /// Número de celular (obligatorio — admins también pueden ser encargados)
+  phone     String     @default("")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  encargados Encargado[]
 
   @@map("users")
 }
 
+// ─────────────────────────────────────────────
+// Model: SystemConfig
+// Configuración dinámica del portal (editable desde el dashboard admin)
+// ─────────────────────────────────────────────
+model SystemConfig {
+  id          String   @id @default("default")
+  /// Título de la sección principal (ej: "SEMANA FACULTATIVA 2026")
+  title1      String   @default("SEMANA FACULTATIVA 2026")
+  /// Título secundario / heading principal (ej: "Catálogo de Eventos")
+  title2      String   @default("Catálogo de Eventos")
+  /// Descripción del portal
+  description String   @default("Portal Oficial de Inscripcion para Actividades organizadas por el Centro Interno de Ingenieria Informatica. Encuentra todos los Eventos Disponibles, Inscribete facilmente y se parte de nuestras Actividades academicas, deportivas y culturales.")
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_config")
+}

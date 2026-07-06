@@ -2,6 +2,8 @@ export interface JWTPayload {
   userId: string;
   username: string;
   name: string;
+  /** Rol del usuario en el sistema */
+  role: "ADMIN" | "COORDINATOR";
   exp: number;
 }
 

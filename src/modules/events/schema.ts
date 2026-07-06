@@ -22,9 +22,14 @@ export const eventSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal("")),
-  type: z.enum(["INDIVIDUAL", "TEAM"], {
-    message: "Tipo de juego no válido.",
+  /** Tipo de evento: INDIVIDUAL, TEAM, OPEN (libre participación / informativo) */
+  type: z.enum(["INDIVIDUAL", "TEAM", "OPEN"], {
+    message: "Tipo de evento no válido.",
   }),
+  /** Estado del evento: AVAILABLE (próximo), IN_PROGRESS (en curso), FINISHED (finalizado) */
+  status: z.enum(["AVAILABLE", "IN_PROGRESS", "FINISHED"]),
+  /** Género al que se dirige el evento */
+  gender: z.enum(["WOMEN", "MEN", "BOTH"]),
   categoryId: z.string().uuid("La categoría seleccionada no es válida."),
   maxParticipants: z
     .number({
@@ -41,8 +46,9 @@ export const eventSchema = z.object({
     .int("Debe ser un número entero.")
     .min(1, "El número de integrantes mínimo debe ser al menos 1.")
     .optional(),
+  /** Inscripciones abiertas o cerradas (independiente del status) */
   isActive: z.boolean({
-    message: "El estado es requerido.",
+    message: "El estado de inscripciones es requerido.",
   }),
   date: z.string().min(1, "La fecha del evento es requerida."),
   registrationDeadline: z
@@ -50,20 +56,25 @@ export const eventSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal("")),
-  encargados: z
+  /** Nombre del ganador o equipo ganador — opcional, no aplica a OPEN ni conferencias */
+  winnerName: z.string().max(200).optional().nullable().or(z.literal("")),
+  /** Campos dinámicos adicionales: [{ label, value }] */
+  customFields: z
     .array(
       z.object({
-        name: z
-          .string()
-          .min(1, "El nombre del encargado es requerido.")
-          .max(100, "El nombre no puede superar 100 caracteres."),
-        phone: z
-          .string()
-          .min(1, "El celular del encargado es requerido.")
-          .max(20, "El celular no puede superar 20 caracteres."),
+        label: z.string().min(1, "El nombre del campo es requerido."),
+        value: z.string(),
       })
     )
-    .min(1, "Debe haber al menos un encargado."),
+    .optional()
+    .default([]),
+  /** Campos que se ocultan en el catálogo público */
+  disabledFields: z.array(z.string()).optional().default([]),
+  /** IDs de los encargados del evento (usuarios del sistema) */
+  encargadoUserIds: z
+    .array(z.string().uuid())
+    .optional()
+    .default([]),
   imageBase64: z.string().optional().nullable(),
 });
 
@@ -84,12 +95,15 @@ export const eventResponseSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   description: z.string().nullable(),
-  type: z.enum(["INDIVIDUAL", "TEAM"]),
+  type: z.enum(["INDIVIDUAL", "TEAM", "OPEN"]),
+  status: z.enum(["AVAILABLE", "IN_PROGRESS", "FINISHED"]),
+  gender: z.enum(["WOMEN", "MEN", "BOTH"]),
   categoryId: z.string().uuid(),
   maxParticipants: z.number().nullable(),
   isActive: z.boolean(),
   date: z.string(),
   registrationDeadline: z.string().nullable(),
+  winnerName: z.string().nullable().optional(),
 });
 
 export type EventResponse = z.infer<typeof eventResponseSchema>;

@@ -25,39 +25,29 @@ const MAX_TEAM_MEMBERS = 5;
  * @returns Lista de eventos activos listos para renderizar.
  */
 export async function getActiveEvents(): Promise<ActiveEvent[]> {
-  const now = new Date();
-
+  // Retorna TODOS los eventos (con inscripciones abiertas o cerradas, y cualquier estado)
+  // para que el catálogo muestre el panorama completo incluyendo los finalizados.
   const events = await db.event.findMany({
-    where: {
-      isActive: true,
-      OR: [
-        { registrationDeadline: null },
-        { registrationDeadline: { gte: now } },
-      ],
-    },
     select: {
       id: true,
       name: true,
       description: true,
       type: true,
+      status: true,
+      gender: true,
       date: true,
       isActive: true,
       registrationDeadline: true,
       maxParticipants: true,
       imageBase64: true,
+      winnerName: true,
+      customFields: true,
+      disabledFields: true,
       category: {
-        select: {
-          id: true,
-          name: true,
-        },
+        select: { id: true, name: true },
       },
       encargados: {
-        select: {
-          id: true,
-          name: true,
-          phone: true,
-          whatsappUrl: true,
-        },
+        select: { id: true, name: true, phone: true, whatsappUrl: true },
         orderBy: { name: "asc" },
       },
       _count: {
@@ -67,28 +57,45 @@ export async function getActiveEvents(): Promise<ActiveEvent[]> {
     orderBy: { date: "asc" },
   });
 
-  return events.map((event) => ({
-    id: event.id,
-    name: event.name,
-    description: event.description,
-    type: event.type,
-    date: event.date.toISOString(),
-    isActive: event.isActive,
-    registrationDeadline: event.registrationDeadline?.toISOString() ?? null,
-    maxParticipants: event.maxParticipants,
-    imageBase64: event.imageBase64,
-    category: {
-      id: event.category.id,
-      name: event.category.name,
-    },
-    encargados: event.encargados.map((enc) => ({
-      id: enc.id,
-      name: enc.name,
-      phone: enc.phone,
-      whatsappUrl: enc.whatsappUrl,
-    })),
-    currentRegistrations: event.type === "TEAM" ? event._count.teams : event._count.registrations,
-  }));
+  return events.map((event) => {
+    // Parsear customFields desde JSON
+    let customFields: { label: string; value: string }[] = [];
+    try {
+      if (typeof event.customFields === "string") {
+        customFields = JSON.parse(event.customFields);
+      } else if (Array.isArray(event.customFields)) {
+        customFields = event.customFields as { label: string; value: string }[];
+      }
+    } catch { customFields = []; }
+
+    return {
+      id: event.id,
+      name: event.name,
+      description: event.description,
+      type: event.type,
+      status: event.status ?? "AVAILABLE",
+      gender: event.gender ?? "BOTH",
+      date: event.date.toISOString(),
+      isActive: event.isActive,
+      registrationDeadline: event.registrationDeadline?.toISOString() ?? null,
+      maxParticipants: event.maxParticipants,
+      imageBase64: event.imageBase64,
+      winnerName: event.winnerName ?? null,
+      customFields,
+      disabledFields: event.disabledFields ?? [],
+      category: {
+        id: event.category.id,
+        name: event.category.name,
+      },
+      encargados: event.encargados.map((enc) => ({
+        id: enc.id,
+        name: enc.name,
+        phone: enc.phone,
+        whatsappUrl: enc.whatsappUrl,
+      })),
+      currentRegistrations: event.type === "TEAM" ? event._count.teams : event._count.registrations,
+    };
+  });
 }
 
 /**

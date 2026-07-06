@@ -12,15 +12,6 @@ interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-// Keyword-based check to identify if an event is team-based (TEAM) or individual (INDIVIDUAL)
-function getRegistrationMode(event: { name: string; description: string | null }): "INDIVIDUAL" | "TEAM" {
-  const name = event.name.toLowerCase();
-  const desc = (event.description || "").toLowerCase();
-  const teamKeywords = ["5v5", "team", "equipo", "lol", "league of legends", "valorant", "futsal", "fútbol", "futbol"];
-  const isTeam = teamKeywords.some((keyword) => name.includes(keyword) || desc.includes(keyword));
-  return isTeam ? "TEAM" : "INDIVIDUAL";
-}
-
 export default async function RegistroPage({ searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams;
   const gameId = typeof resolvedSearchParams.gameId === "string" ? resolvedSearchParams.gameId : undefined;
@@ -36,20 +27,20 @@ export default async function RegistroPage({ searchParams }: PageProps) {
           id: true,
           name: true,
           description: true,
+          type: true,
+          status: true,
           isActive: true,
           registrationDeadline: true,
           maxParticipants: true,
           category: {
-            select: {
-              name: true,
-            },
+            select: { name: true },
           },
           _count: {
-            select: { registrations: true },
+            select: { registrations: true, teams: true },
           },
         },
       });
-    } catch (e) {
+    } catch {
       isInvalidUuid = true;
     }
   }
@@ -65,9 +56,9 @@ export default async function RegistroPage({ searchParams }: PageProps) {
             </svg>
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-bold tracking-tight text-white">Juego No Encontrado</h2>
+            <h2 className="text-xl font-bold tracking-tight text-white">Actividad no encontrada</h2>
             <p className="text-sm text-zinc-400 leading-relaxed">
-              No hemos podido identificar el torneo al cual deseas inscribirte. Por favor, regresa al catálogo principal y selecciona tu juego.
+              No hemos podido identificar la actividad a la cual deseas inscribirte. Por favor, regresa al catálogo principal.
             </p>
           </div>
           <div className="pt-2">
@@ -83,13 +74,45 @@ export default async function RegistroPage({ searchParams }: PageProps) {
     );
   }
 
-  // Calculate event rules / status
+  // Si el evento es de tipo OPEN (abierto/informativo), no admite registro público
+  if (event.type === "OPEN") {
+    return (
+      <div className="min-h-screen bg-transparent text-brand-light-gray flex flex-col items-center justify-center p-4 pb-safe selection:bg-brand-sky selection:text-brand-navy">
+        <div className="w-full max-w-md text-center p-8 bg-brand-navy/60 border border-brand-blue/35 rounded-2xl shadow-2xl space-y-6">
+          <div className="w-16 h-16 rounded-full bg-brand-dark/60 border border-brand-blue/30 flex items-center justify-center text-amber-400 mx-auto">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold tracking-tight text-white">{event.name}</h2>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              Esta actividad es informativa y de libre asistencia. No requiere un registro previo. ¡Te esperamos!
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link
+              href="/"
+              className="flex items-center justify-center w-full min-h-[48px] rounded-xl bg-brand-blue hover:bg-brand-blue/90 text-white border border-brand-blue/40 text-sm font-semibold transition-all duration-150 active:scale-[0.98]"
+            >
+              Volver al Catálogo
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const now = new Date();
   const deadline = event.registrationDeadline ? new Date(event.registrationDeadline) : null;
   const isDeadlinePassed = deadline ? deadline < now : false;
-  const isFull = event.maxParticipants !== null && event._count.registrations >= event.maxParticipants;
-  const isOpen = event.isActive && !isDeadlinePassed && !isFull;
-  const registrationMode = getRegistrationMode(event);
+  
+  // Si es en equipo, contamos por equipos
+  const count = event.type === "TEAM" ? event._count.teams : event._count.registrations;
+  const isFull = event.maxParticipants !== null && count >= event.maxParticipants;
+  const isFinished = event.status === "FINISHED";
+
+  const isOpen = event.isActive && !isDeadlinePassed && !isFull && !isFinished;
 
   return (
     <div className="min-h-screen bg-transparent text-brand-light-gray flex flex-col items-center py-6 pb-24 px-4 selection:bg-brand-sky selection:text-brand-navy">
@@ -111,7 +134,7 @@ export default async function RegistroPage({ searchParams }: PageProps) {
           <span>Volver</span>
         </Link>
         <span className="text-[10px] font-bold text-brand-sky/70 uppercase tracking-widest bg-brand-dark/60 border border-brand-blue/30 px-2.5 py-1 rounded-lg">
-          {registrationMode === "TEAM" ? "Torneo en Equipo" : "Torneo Individual"}
+          {event.type === "TEAM" ? "Torneo en Equipo" : "Torneo Individual"}
         </span>
       </div>
 
@@ -142,7 +165,7 @@ export default async function RegistroPage({ searchParams }: PageProps) {
             <RegistrationForm
               eventId={event.id}
               eventName={event.name}
-              registrationMode={registrationMode}
+              registrationMode={event.type as "INDIVIDUAL" | "TEAM"}
             />
           ) : (
             <div className="w-full p-6 text-center bg-brand-dark/50 border border-brand-blue/30 rounded-2xl shadow-2xl space-y-4">
@@ -154,7 +177,9 @@ export default async function RegistroPage({ searchParams }: PageProps) {
               <div className="space-y-1">
                 <h3 className="text-base font-bold text-white">Inscripciones Cerradas</h3>
                 <p className="text-xs text-brand-light-gray/50 leading-relaxed max-w-xs mx-auto">
-                  {isDeadlinePassed
+                  {isFinished
+                    ? "Esta actividad ya ha finalizado."
+                    : isDeadlinePassed
                     ? "El plazo límite de registro para este torneo ha expirado."
                     : isFull
                     ? "El cupo máximo de participantes para este torneo ha sido completado."

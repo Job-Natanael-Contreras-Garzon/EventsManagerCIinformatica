@@ -6,6 +6,8 @@ export interface UserDTO {
   id: string;
   name: string;
   username: string;
+  role: "ADMIN" | "COORDINATOR";
+  phone: string;
   createdAt: Date;
 }
 
@@ -20,45 +22,60 @@ export async function getUserByUsername(username: string) {
       name: true,
       username: true,
       password: true,
+      role: true,
+      phone: true,
     },
   });
 }
 
 /**
- * Registra un nuevo administrador en la base de datos.
+ * Registra un nuevo usuario en la base de datos (admin o coordinador).
  */
-export async function createAdminUser(name: string, username: string, passwordHash: string): Promise<UserDTO> {
+export async function createUser(
+  name: string,
+  username: string,
+  passwordHash: string,
+  role: "ADMIN" | "COORDINATOR",
+  phone: string
+): Promise<UserDTO> {
   const newUser = await db.user.create({
     data: {
       name,
       username,
       password: passwordHash,
+      role,
+      phone,
     },
     select: {
       id: true,
       name: true,
       username: true,
+      role: true,
+      phone: true,
       createdAt: true,
     },
   });
 
-  return newUser;
+  return newUser as UserDTO;
 }
 
 /**
- * Retorna todos los usuarios administradores.
+ * Retorna todos los usuarios del sistema.
  */
-export async function getAllAdminUsers(): Promise<Omit<UserDTO, "createdAt">[]> {
+export async function getAllUsers(): Promise<Omit<UserDTO, "createdAt">[]> {
   return await db.user.findMany({
     select: {
       id: true,
       name: true,
       username: true,
+      role: true,
+      phone: true,
     },
-    orderBy: {
-      name: "asc",
-    },
-  });
+    orderBy: [
+      { role: "asc" },
+      { name: "asc" },
+    ],
+  }) as Omit<UserDTO, "createdAt">[];
 }
 
 /**
@@ -82,6 +99,8 @@ export async function ensureDefaultAdmin(): Promise<void> {
         name: defaultName,
         username: defaultEmail,
         password: passwordHash,
+        role: "ADMIN",
+        phone: "",
       },
     });
     console.log(`[Auth Service] Creado administrador por defecto: ${defaultEmail}`);
@@ -89,7 +108,7 @@ export async function ensureDefaultAdmin(): Promise<void> {
 }
 
 /**
- * Elimina un administrador por su ID de base de datos.
+ * Elimina un usuario por su ID de base de datos.
  */
 export async function deleteAdminUser(id: string): Promise<void> {
   await db.user.delete({
@@ -98,8 +117,62 @@ export async function deleteAdminUser(id: string): Promise<void> {
 }
 
 /**
- * Cuenta la cantidad total de administradores registrados.
+ * Cuenta la cantidad total de usuarios registrados.
  */
 export async function countAdminUsers(): Promise<number> {
   return await db.user.count();
+}
+
+/**
+ * Actualiza el perfil propio del usuario (nombre y celular).
+ */
+export async function updateUserProfile(
+  id: string,
+  name: string,
+  phone: string
+): Promise<void> {
+  await db.user.update({
+    where: { id },
+    data: { name, phone },
+  });
+}
+
+// Alias para compatibilidad con código existente
+export const createAdminUser = (
+  name: string,
+  username: string,
+  passwordHash: string
+) => createUser(name, username, passwordHash, "ADMIN", "");
+
+// Alias para compatibilidad con código existente
+export const getAllAdminUsers = getAllUsers;
+
+/**
+ * Actualiza la información completa de cualquier usuario (para el administrador).
+ */
+export async function updateUserByAdmin(
+  id: string,
+  data: {
+    name: string;
+    username: string;
+    phone: string;
+    role: "ADMIN" | "COORDINATOR";
+    password?: string;
+  }
+): Promise<void> {
+  const updateData: any = {
+    name: data.name,
+    username: data.username,
+    phone: data.phone,
+    role: data.role,
+  };
+
+  if (data.password) {
+    updateData.password = hashPassword(data.password);
+  }
+
+  await db.user.update({
+    where: { id },
+    data: updateData,
+  });
 }

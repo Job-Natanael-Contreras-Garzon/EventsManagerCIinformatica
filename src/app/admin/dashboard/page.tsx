@@ -2,6 +2,9 @@ import { db } from "@/lib/db";
 import { RefreshButton } from "./RefreshButton";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import Link from "next/link";
+import { getCurrentUser } from "@/modules/auth/utils/session";
+import { getSystemConfig } from "@/modules/system-config/actions";
+import { SystemConfigEditor } from "./SystemConfigEditor";
 
 
 // Force Next.js to not cache page statically, ensuring data is fresh on reload/refresh
@@ -16,13 +19,44 @@ export const metadata = {
 
 export default async function AdminDashboardPage() {
   const now = new Date();
+  const currentUser = await getCurrentUser();
+  const isCoordinator = currentUser?.role === "COORDINATOR";
+
+  // Filtro base para coordinadores: solo sus eventos asignados
+  const eventWhere = isCoordinator && currentUser
+    ? { encargados: { some: { userId: currentUser.userId } } }
+    : {};
 
   // Perform concurrent queries using Prisma to avoid blocking wait times
-  const [totalPlayers, totalTeams, activeEvents, recentRegistrations] = await Promise.all([
-    db.participant.count(),
-    db.team.count(),
+  const [totalPlayers, totalTeams, activeEvents, recentRegistrations, systemConfig] = await Promise.all([
+    // Si es coordinador, contar solo participantes de sus eventos
+    isCoordinator && currentUser
+      ? db.participant.count({
+          where: {
+            registrations: {
+              some: {
+                event: {
+                  encargados: { some: { userId: currentUser.userId } },
+                },
+              },
+            },
+          },
+        })
+      : db.participant.count(),
+
+    isCoordinator && currentUser
+      ? db.team.count({
+          where: {
+            event: {
+              encargados: { some: { userId: currentUser.userId } },
+            },
+          },
+        })
+      : db.team.count(),
+
     db.event.findMany({
       where: {
+        ...eventWhere,
         isActive: true,
         OR: [
           { registrationDeadline: null },
@@ -35,39 +69,33 @@ export default async function AdminDashboardPage() {
         description: true,
         type: true,
         maxParticipants: true,
-        _count: {
-          select: {
-            registrations: true,
-            teams: true,
-          },
-        },
+        _count: { select: { registrations: true, teams: true } },
       },
-      orderBy: {
-        name: "asc",
-      },
+      orderBy: { name: "asc" },
     }),
+
     db.registration.findMany({
       take: 10,
-      orderBy: {
-        createdAt: "desc",
-      },
+      where: isCoordinator && currentUser
+        ? {
+            event: {
+              encargados: { some: { userId: currentUser.userId } },
+            },
+          }
+        : {},
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
         confirmationCode: true,
         createdAt: true,
         teamId: true,
-        event: {
-          select: {
-            name: true,
-          },
-        },
-        participant: {
-          select: {
-            fullName: true,
-          },
-        },
+        event: { select: { name: true } },
+        participant: { select: { fullName: true } },
       },
     }),
+
+    // Config del sistema solo para admins (para mostrar el editor)
+    !isCoordinator ? getSystemConfig() : null,
   ]);
 
   // Calculate Global Occupancy
@@ -89,11 +117,16 @@ export default async function AdminDashboardPage() {
         <section className="flex items-center justify-between gap-4">
           <div>
             <span className="text-[10px] font-bold text-brand-sky uppercase tracking-widest">
-              Consola Operativa
+              {isCoordinator ? "Vista de Coordinador" : "Consola Operativa"}
             </span>
             <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl">
               Panel de Control
             </h2>
+            {isCoordinator && (
+              <p className="text-[10px] text-brand-sky/50 mt-0.5">
+                Mostrando métricas de tus eventos asignados
+              </p>
+            )}
           </div>
           <RefreshButton />
         </section>
@@ -114,7 +147,7 @@ export default async function AdminDashboardPage() {
               <span className="text-[10px] font-semibold text-brand-sky/50">Registrados</span>
             </div>
             <p className="mt-2 text-[10px] text-brand-light-gray/60 leading-tight">
-              Total de participantes individuales inscritos.
+              {isCoordinator ? "Participantes en tus eventos." : "Total de participantes individuales inscritos."}
             </p>
           </article>
 
@@ -131,7 +164,7 @@ export default async function AdminDashboardPage() {
               <span className="text-[10px] font-semibold text-brand-sky/50">Creados</span>
             </div>
             <p className="mt-2 text-[10px] text-brand-light-gray/60 leading-tight">
-              Grupos formados para torneos multijugador.
+              {isCoordinator ? "Equipos en tus eventos." : "Grupos formados para torneos multijugador."}
             </p>
           </article>
 
@@ -168,6 +201,7 @@ export default async function AdminDashboardPage() {
             </div>
           </article>
         </section>
+
         {/* 3. Barras de Progreso por Juego */}
         <section className="p-5 rounded-2xl bg-brand-dark/35 border border-brand-blue/30 flex flex-col gap-4">
           <div>
@@ -230,6 +264,7 @@ export default async function AdminDashboardPage() {
             )}
           </div>
         </section>
+
         {/* 4. Tabla Adaptativa de Registros Recientes */}
         <section className="p-5 rounded-2xl bg-brand-dark/35 border border-brand-blue/30 flex flex-col gap-4">
           <div>
@@ -300,6 +335,11 @@ export default async function AdminDashboardPage() {
             </table>
           </div>
         </section>
+
+        {/* 5. Editor de Cabecera del Catálogo Público — Solo para Admin */}
+        {!isCoordinator && systemConfig && (
+          <SystemConfigEditor initialConfig={systemConfig} />
+        )}
 
       </main>
 

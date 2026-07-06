@@ -70,7 +70,7 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
           </span>
           <input
             type="text"
-            placeholder="Buscar torneos o juegos..."
+            placeholder="Buscar Eventos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full min-h-[48px] pl-11 pr-4 py-2.5 bg-brand-dark/50 border border-brand-blue/30 rounded-xl text-white placeholder:text-white/30 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-sky/50 focus-visible:border-transparent transition-all"

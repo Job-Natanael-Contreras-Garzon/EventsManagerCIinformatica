@@ -6,6 +6,7 @@ import { verifyJWT } from "./modules/auth/utils/jwt";
 /**
  * Middleware para proteger las rutas de administración (/admin).
  * Verifica que el token JWT almacenado en cookies sea válido.
+ * Los coordinadores tienen acceso restringido a /admin/usuarios solo para ver su perfil.
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -41,7 +42,15 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  return NextResponse.next();
+  // Pasar el rol del usuario en los headers de la request para que los Server Components lo lean
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-user-id", payload.userId);
+  requestHeaders.set("x-user-role", payload.role ?? "ADMIN");
+  requestHeaders.set("x-user-name", payload.name);
+
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 }
 
 export const config = {
