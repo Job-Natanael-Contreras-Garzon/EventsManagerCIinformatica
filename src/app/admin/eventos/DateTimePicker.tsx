@@ -8,6 +8,7 @@ interface DateTimePickerProps {
   onChange: (value: string) => void;
   label: string;
   error?: string;
+  align?: "left" | "right" | "center";
 }
 
 const MONTHS = [
@@ -29,9 +30,16 @@ function getStartDayOfMonth(year: number, month: number) {
   return day === 0 ? 6 : day - 1;
 }
 
-export function DateTimePicker({ value, onChange, label, error }: DateTimePickerProps) {
+export function DateTimePicker({ value, onChange, label, error, align = "left" }: DateTimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  const alignClass = 
+    align === "right" 
+      ? "right-0" 
+      : align === "center" 
+        ? "left-1/2 -translate-x-1/2" 
+        : "left-0";
   
   // Internal local date state (all operations in client's local timezone)
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
@@ -322,7 +330,7 @@ export function DateTimePicker({ value, onChange, label, error }: DateTimePicker
 
       {/* Date Time Picker Dropdown */}
       {isOpen && (
-        <div className="absolute left-0 right-0 md:left-auto md:right-0 mt-2 p-4 rounded-2xl bg-brand-navy border border-brand-blue/30 shadow-2xl z-50 flex flex-col gap-4 w-full md:w-[350px] animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className={`absolute ${alignClass} mt-2 p-4 rounded-2xl bg-brand-navy border border-brand-blue/30 shadow-2xl z-50 flex flex-col gap-4 w-[300px] sm:w-[325px] animate-in fade-in slide-in-from-top-2 duration-150`}>
           
           {/* Shortcuts section */}
           <div className="grid grid-cols-2 gap-1.5 shrink-0">

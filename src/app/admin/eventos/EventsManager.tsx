@@ -995,6 +995,7 @@ export function EventsManager({
                       value={field.value}
                       onChange={field.onChange}
                       error={(errors.date as any)?.message}
+                      align="left"
                     />
                   )}
                 />
@@ -1007,6 +1008,7 @@ export function EventsManager({
                       value={field.value}
                       onChange={field.onChange}
                       error={(errors.registrationDeadline as any)?.message}
+                      align="right"
                     />
                   )}
                 />

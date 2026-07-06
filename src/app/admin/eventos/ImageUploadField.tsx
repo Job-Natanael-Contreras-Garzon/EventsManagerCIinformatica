@@ -124,9 +124,9 @@ export function ImageUploadField({
 
       // Validación de tamaño POST-conversión: máx. 1 MB
       if (webpFile.size > MAX_SIZE_BYTES) {
-        const sizeKb = (webpFile.size / 1024).toFixed(1);
+        const sizeKb = (webpFile.size / 1548).toFixed(1);
         setErrorMsg(
-          `La imagen convertida ocupa ${sizeKb} KB, lo que supera el límite de 1 MB. ` +
+          `La imagen convertida ocupa ${sizeKb} KB, lo que supera el límite de 1.5 MB. ` +
             `Prueba con una imagen de menor resolución o contenido.`
         );
         return;
