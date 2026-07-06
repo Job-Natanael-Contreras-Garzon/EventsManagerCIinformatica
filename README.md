@@ -1,122 +1,173 @@
-# Portal de Gestión de Eventos - CI Informática 🎮
+# Portal de Gestión de Eventos — CI Informática
 
-Este proyecto es una aplicación web y Progressive Web App (PWA) de alto rendimiento diseñada para la Facultad de Ingeniería Informática, utilizada durante la **Semana Universitaria 2026**. Permite a los estudiantes explorar los torneos disponibles, registrarse individualmente o en equipos de manera simplificada, y a los administradores monitorear la ocupación y participantes en tiempo real.
-
----
-
-## 🛠️ Stack Tecnológico
-
-- **Frontend & Routing:** Next.js 14+ (App Router con Server & Client Components)
-- **Estilos:** Tailwind CSS con diseño responsive Mobile-First y estética premium (modo oscuro)
-- **Base de Datos & ORM:** PostgreSQL + Prisma ORM (con transacciones seguras `$transaction`)
-- **Validación de Datos:** Zod (esquemas isomórficos aplicados en cliente y servidor)
-- **PWA (Progressive Web App):** Soporte offline y criterios de instalabilidad para dispositivos móviles
+Aplicación web progresiva (PWA) de alto rendimiento para la **Facultad de Ingeniería Informática**, utilizada durante la **Semana Universitaria 2026**. Permite a estudiantes explorar torneos y ferias, registrarse individualmente o en equipos, y a administradores/coordinadores monitorear y gestionar toda la operación en tiempo real.
 
 ---
 
-## 🚀 Comenzando
+## Stack Tecnológico
+
+- **Framework:** Next.js 16 (App Router con Server & Client Components)
+- **Lenguaje:** TypeScript 5 (strict mode)
+- **Estilos:** Tailwind CSS v4 con diseño responsive mobile-first y modo oscuro
+- **Base de Datos & ORM:** PostgreSQL + Prisma 6 (transacciones ACID con `$transaction`)
+- **Validación:** Zod 4 (esquemas isomórficos cliente/servidor)
+- **Autenticación:** JWT + PBKDF2 (Web Crypto API), httpOnly cookies
+- **Notificaciones Push:** Web Push API con VAPID
+- **PWA:** Service Worker con estrategia cache-first, offline fallback
+- **Contenedorización:** Docker (multi-stage build, alpine, non-root user)
+
+---
+
+## Funcionalidades Principales
+
+### Módulo Público
+
+- **Catálogo de Eventos y Ferias** (`/`): Tarjeta de bienvenida configurable, listado dinámico de torneos activos con indicador de cupos, y sección de ferias de emprendimiento.
+- **Registro Inteligente** (`/registro`): Formulario adaptativo según el tipo de torneo:
+  - **Individual**: nombre, correo, código universitario, celular (válido Bolivia).
+  - **Equipo**: crear equipo (genera código único de 6 caracteres) o unirse a equipo existente (límite de 5 miembros).
+- **Ticket Digital** (`/registro/exito`): Confirmación con código único, rol en el equipo y enlace directo a WhatsApp del encargado.
+- **Offline** (`/offline`): Página de respaldo para navegación sin conexión.
+
+### Panel de Administración (`/admin/*`)
+
+Rutas protegidas por autenticación JWT con dos roles:
+
+| Ruta | Descripción |
+|---|---|
+| `/admin/login` | Inicio de sesión de administradores/coordinadores |
+| `/admin/dashboard` | Panel con métricas globales: jugadores, equipos, ocupación, progreso por torneo, registros recientes, editor de configuración del sistema |
+| `/admin/eventos` | CRUD completo de torneos: crear/editar/duplicar, asignar categoría, imagen, campos personalizados, género, fecha límite, encargados, estado |
+| `/admin/ferias` | CRUD de ferias de emprendimiento: nombre, descripción, costo, fechas, imagen, URL de registro |
+| `/admin/usuarios` | Gestión de cuentas: crear/editar/eliminar administradores y coordinadores |
+| `/admin/registrados` | Visualización y gestión de inscripciones: filtro por evento, registro manual |
+
+### Sistema de Notificaciones Push
+
+- Suscripción y desuscripción desde el navegador.
+- Notificaciones al coordinador cuando se completa un registro en su evento.
+- Recordatorio automático vía cron (`/api/cron/reminders`) 1 hora antes de cada evento.
+
+### Características Técnicas
+
+- Validación isomórfica con Zod (`react-hook-form` + Server Actions).
+- Protección contra registros duplicados (código universitario/correo único por torneo).
+- Límite de cupos y fecha de cierre automáticos.
+- Imágenes de eventos/ferias almacenadas como Base64 en BD.
+- Campos personalizables por evento (JSON) y campos deshabilitables.
+- Service Worker para funcionalidad offline y recepción de notificaciones push.
+- Refresh asíncrono del dashboard sin recargar la página.
+
+---
+
+## Comenzando
 
 ### Requisitos Previos
 
-Asegúrate de tener instalado:
-- **Node.js** (versión 18 o superior recomendada)
-- **PostgreSQL** (instancia local o en la nube)
+- Node.js 18+ (recomendado 20+)
+- PostgreSQL 14+ (local o Supabase)
 
-### Instalación y Configuración
+### Instalación
 
-1. **Instalar Dependencias:**
-   ```bash
-   npm install
-   ```
+```bash
+# 1. Instalar dependencias
+npm install
 
-2. **Variables de Entorno:**
-   Crea un archivo `.env` en la raíz del proyecto con la siguiente variable para la base de datos:
-   ```env
-   DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/events_manager?schema=public"
-   ```
+# 2. Crear variables de entorno
+# Copia el archivo .env.example o crea .env con:
+# DATABASE_URL, DIRECT_URL, NODE_ENV,
+# NEXT_PUBLIC_APP_URL, NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+# VAPID_PRIVATE_KEY, VAPID_SUBJECT, CRON_SECRET
 
-3. **Ejecutar Migraciones de Base de Datos:**
-   Prepara el esquema en la base de datos de PostgreSQL usando Prisma:
-   ```bash
-   npx prisma migrate dev
-   ```
+# 3. Ejecutar migraciones
+npx prisma migrate dev
 
-4. **Sembrar Datos Iniciales (Opcional):**
-   Si deseas inicializar categorías y eventos de ejemplo:
-   ```bash
-   npx prisma db seed
-   ```
+# 4. Sembrar datos iniciales (opcional)
+npx prisma db seed
 
-5. **Iniciar Servidor de Desarrollo:**
-   ```bash
-   npm run dev
-   ```
-   Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la aplicación.
+# 5. Iniciar servidor de desarrollo
+npm run dev
+```
 
----
+### Variables de Entorno
 
-## 👤 Guía del Usuario (Clientes/Participantes)
+| Variable | Descripción |
+|---|---|
+| `DATABASE_URL` | Connection string PostgreSQL (pooler) |
+| `DIRECT_URL` | Connection string directa para migraciones |
+| `NEXT_PUBLIC_APP_URL` | URL base de la aplicación |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Clave pública VAPID para push |
+| `VAPID_PRIVATE_KEY` | Clave privada VAPID |
+| `VAPID_SUBJECT` | Email de contacto VAPID |
+| `CRON_SECRET` | Token de seguridad para endpoint cron |
+| `NODE_ENV` | Entorno (`development` / `production`) |
 
-La aplicación cuenta con una interfaz mobile-first optimizada para pantallas táctiles, donde los estudiantes pueden inscribirse a los torneos.
+### Docker
 
-### 1. Catálogo de Juegos y Torneos
-Al acceder al portal (`/`), los usuarios verán una tarjeta de bienvenida y el catálogo dinámico de eventos en vivo.
-- **Visualización de tarjetas:** Cada juego muestra su categoría, descripción corta, fecha/hora y encargados del torneo.
-- **Indicador "En Vivo" / Cupos:** Muestra dinámicamente si hay registros abiertos y cuántas personas/equipos se han inscrito.
-
-### 2. Proceso de Registro (`/registro`)
-Al pulsar en **Inscribirse** en cualquier torneo activo del catálogo, se abrirá el formulario inteligente que cuenta con dos modos de registro según la naturaleza del juego:
-
-#### A. Torneos Individuales (Ej: Ajedrez, Clash Royale)
-Los campos obligatorios son:
-- **Nombre Completo:** Solo letras y espacios.
-- **Correo Electrónico:** Dirección válida.
-- **Código Universitario:** Código de estudiante (alfanumérico y guiones, entre 6 y 20 caracteres).
-- **Número de Celular:** Celular válido de Bolivia (8 dígitos, empezando con 6 o 7, ej: 70712345).
-
-#### B. Torneos en Equipo (Ej: Valorant, League of Legends, Futsal)
-Los usuarios disponen de una pestaña doble de interacción:
-1. **Crear un Equipo:**
-   - El primer usuario introduce el **Nombre del Equipo** y sus datos personales como **Líder del Equipo**.
-   - Al finalizar, el sistema genera un **Código de Equipo** único de 6 caracteres (ej: `A8B2C4`).
-   - El líder debe compartir este código con sus compañeros de equipo.
-2. **Unirse a un Equipo:**
-   - Los compañeros de equipo seleccionan esta pestaña.
-   - Introducen el **Código de Equipo** proporcionado por el líder y completan sus datos personales.
-   - El sistema los unirá automáticamente al mismo grupo (límite estándar de 5 miembros por equipo).
-
-### 3. Confirmación y Ticket Digital (`/registro/exito`)
-Una vez completado el registro con éxito:
-- Se muestra una pantalla de confirmación interactiva estilo **Ticket Digital**.
-- Contiene un **Código de Confirmación** único.
-- Muestra el rol en el equipo (si corresponde) y un botón de acceso directo para coordinar mediante **WhatsApp** con los encargados oficiales del torneo.
+```bash
+docker build -t events-manager-ci .
+docker run -p 3000:3000 --env-file .env events-manager-ci
+```
 
 ---
 
-## 🔑 Guía de Administración (Admins)
+## Esquema de Base de Datos
 
-La consola de administración está diseñada para centralizar las métricas clave de ocupación y los flujos de inscripción durante la Semana Universitaria.
+El modelo de datos incluye 9 tablas principales:
 
-### 1. Panel de Control (`/admin/dashboard`)
-Al acceder al panel de control, los administradores tienen acceso a:
-- **Métricas Globales de Resumen:**
-  - **Jugadores:** Cantidad total de participantes individuales inscritos en la base de datos.
-  - **Equipos:** Número total de equipos creados para torneos grupales.
-  - **Ocupación Global:** Porcentaje total de ocupación sumando las capacidades máximas de todos los torneos activos.
-- **Ratio de Inscripciones por Torneo:**
-  - Listado de todos los juegos con barras de progreso visuales avanzadas.
-  - Indica el número exacto de inscritos contra el límite máximo definido (ej: `4 / 8 Equipos` o `12 / 20 Jugadores`).
-  - Apoya el control visual mediante colores diferenciados para torneos individuales (verde) y grupales (violeta).
-- **Tabla de Registros Recientes:**
-  - Muestra un feed en tiempo real de las últimas 10 inscripciones completadas.
-  - Incluye el nombre del participante, el torneo correspondiente, el tipo de inscripción (Individual o Equipo), el código de confirmación y la fecha/hora exacta del registro.
-- **Acción de Refresco Rápido:**
-  - Cuenta con un botón de **Actualizar** en la parte superior derecha para sincronizar el estado actual de la base de datos de manera asíncrona sin necesidad de recargar toda la página web.
+- **Category** — Categorías de torneos (ej: Deportes, E-Sports)
+- **Event** — Torneos con tipo (INDIVIDUAL/TEAM/OPEN), género, fecha, estado, capacidad, campos personalizados
+- **Feria** — Ferias de emprendimiento con costo, fechas e imagen
+- **Encargado** — Coordinadores asignados a eventos o ferias
+- **Participant** — Datos de estudiantes inscritos
+- **Registration** — Inscripciones con código de confirmación único (relación participant-evento)
+- **Team** — Equipos con código único de 6 caracteres y líder
+- **User** — Cuentas de administradores/coordinadores (roles ADMIN/COORDINATOR)
+- **PushSubscription** — Suscripciones a notificaciones push por usuario
+- **SystemConfig** — Configuración singleton de textos del catálogo público
 
 ---
 
-## 🛡️ Reglas y Validaciones de Seguridad
+## Arquitectura
 
-- **Evitar Duplicados:** El sistema impide transaccionalmente que un mismo código universitario o correo electrónico se registre más de una vez en un mismo torneo.
-- **Fechas Límite:** No se permiten inscripciones a eventos cuya fecha límite haya expirado o si el cupo del torneo está completo.
-- **Límite por Equipo:** Un código de equipo solo permite hasta un máximo de 5 participantes. Cualquier intento adicional lanzará un error controlado en la UI.
+El proyecto sigue una arquitectura modular con separación estricta de responsabilidades:
+
+```
+src/
+├── app/           # Presentación y ruteo (App Router)
+├── components/    # Componentes atómicos de UI reutilizables
+├── lib/           # Clientes globales (Prisma singleton)
+├── modules/       # Lógica de negocio por dominio
+│   ├── auth/      # Autenticación, autorización, sesiones
+│   ├── events/    # Gestión de torneos
+│   ├── ferias/    # Gestión de ferias
+│   ├── notifications/  # Notificaciones push
+│   ├── registration/   # Registro de participantes
+│   └── system-config/  # Configuración del sistema
+└── middleware.ts  # Protección de rutas admin con JWT
+```
+
+Cada módulo de negocio sigue el patrón: **actions** (Server Actions) → **schema** (Zod) → **services** (Prisma queries), manteniendo la lógica de negocio fuera de la capa de presentación.
+
+Ver `docs/arquitectura.md` para documentación detallada.
+
+---
+
+## Roles de Usuario
+
+| Rol | Acceso |
+|---|---|
+| **ADMIN** | Acceso completo a todas las rutas y operaciones del panel |
+| **COORDINATOR** | Visibilidad restringida a métricas y registros de sus eventos asignados |
+
+---
+
+## PWA
+
+La aplicación es instalable como PWA con:
+- Manifest con íconos adaptativos (192px, 512px, maskable)
+- Service Worker con estrategia cache-first
+- Soporte de notificaciones push
+- Pantalla offline
+- Modo standalone con orientación portrait
+- Tema oscuro personalizado (#09090B) y color primario violeta (#7C3AED)
