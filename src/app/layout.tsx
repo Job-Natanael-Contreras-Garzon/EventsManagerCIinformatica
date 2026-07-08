@@ -14,13 +14,43 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EventsCIInformatica",
-  description: "Plataforma de registro y gestión de eventos del CI Informática. Inscríbete, gestiona tus entradas y mantente al día con la agenda.",
+  metadataBase: new URL("https://activity-187.vercel.app"),
+  title: {
+    default: "Portal de Eventos · CI Ingeniería Informática",
+    template: "%s · CI Ingeniería Informática",
+  },
+  description:
+    "Explora e inscríbete en los torneos, competencias y ferias de emprendimiento de la Semana Facultativa 2026 — Ingeniería Informática, UAGRM.",
+  applicationName: "Portal de Eventos CI",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Eventos CI",
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_BO",
+    url: "/",
+    siteName: "Portal de Eventos · CI Ingeniería Informática",
+    title: "Portal de Eventos · CI Ingeniería Informática",
+    description:
+      "Torneos, competencias y ferias de emprendimiento de la Semana Facultativa 2026 — Ingeniería Informática, UAGRM. Inscríbete en línea.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Escudo Ingeniería Informática UAGRM — Portal de Eventos",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Portal de Eventos · CI Ingeniería Informática",
+    description:
+      "Torneos, competencias y ferias de la Semana Facultativa 2026 — Ingeniería Informática, UAGRM.",
+    images: ["/og-image.png"],
   },
 };
 

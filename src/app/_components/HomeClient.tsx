@@ -31,38 +31,40 @@ export function HomeClient({
     <div className="h-screen h-[100dvh] overflow-hidden bg-transparent text-brand-light-gray flex flex-col items-center selection:bg-brand-sky selection:text-brand-navy">
       
       {/* Sticky Premium Header */}
-      <header className="sticky top-0 z-40 w-full bg-brand-dark/80 backdrop-blur-md border-b border-brand-blue/20 shrink-0">
-        <div className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 md:px-6 py-3 md:py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <img
-            src="/assets/logoInformatica.webp"
-            alt="CI Ingeniería Informática"
-            className="w-9 h-9 md:w-11 md:h-11 rounded-lg object-contain shadow-sm"
-          />
-          <div>
-            <h1 className="text-sm md:text-base font-bold tracking-tight text-white leading-none">
-              Portal de Eventos
-            </h1>
-            <span className="text-[10px] md:text-[11px] text-white/40 font-medium">
-              CI INGENIERÍA INFORMÁTICA
-            </span>
+      <header className="sticky top-0 z-40 w-full bg-gradient-to-b from-brand-navy/95 via-brand-navy/80 to-brand-navy/30 backdrop-blur-xl border-b border-white/[0.06] shrink-0">
+        <div className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/10 shadow-sm">
+              <img
+                src="/assets/escudo.png"
+                alt="Escudo Ingeniería Informática UAGRM"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="leading-tight">
+              <h1 className="text-[15px] md:text-base font-bold tracking-tight text-white">
+                Portal de Eventos
+              </h1>
+              <span className="block text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-sky/50">
+                CI Ingeniería Informática
+              </span>
+            </div>
           </div>
-        </div>
-        
-        {/* Active PWA Indicator / Live stream link */}
-        <div className="flex items-center gap-2">
+
           <a
             href="https://www.tiktok.com/@ci.ingenieriainformatica?_r=1&_t=ZS-97grDptqxOR"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 bg-brand-blue/20 border border-brand-sky/15 rounded-full px-2 py-0.5 hover:bg-brand-blue/40 transition-colors"
+            className="flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-3 py-1.5 hover:bg-emerald-500/20 transition-colors"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-300">
               En Vivo
             </span>
           </a>
-        </div>
         </div>
       </header>
 

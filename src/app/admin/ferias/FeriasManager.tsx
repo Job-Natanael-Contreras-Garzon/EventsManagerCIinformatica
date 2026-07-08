@@ -244,7 +244,11 @@ export function FeriasManager({
         <section className="space-y-4">
           {initialFerias.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 border border-brand-blue/20 rounded-2xl bg-brand-navy/30 text-center">
-              <span className="text-3xl mb-3">🎪</span>
+              <span className="text-brand-sky/40 mb-3">
+                <svg className="w-9 h-9" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72l1.189-1.19A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72M6.75 15.75h.75a.75.75 0 00.75-.75v-.75a.75.75 0 00-.75-.75h-.75a.75.75 0 00-.75.75v.75c0 .414.336.75.75.75z" />
+                </svg>
+              </span>
               <h4 className="text-sm font-bold text-zinc-300">No hay ferias registradas</h4>
               <p className="text-xs text-zinc-500 mt-1 max-w-xs">
                 {currentUserRole === "ADMIN"
@@ -272,8 +276,16 @@ export function FeriasManager({
                         <h3 className="text-sm font-bold text-white leading-snug line-clamp-1">
                           {feria.name}
                         </h3>
-                        <p className="text-[10px] text-brand-sky/70 font-semibold mt-0.5">
-                          💵 {feria.cost} | 📅 {feria.dates}
+                        <p className="text-[10px] text-brand-sky/70 font-semibold mt-0.5 flex items-center gap-2 flex-wrap">
+                          <span className="inline-flex items-center gap-1">
+                            <svg className="w-3 h-3 shrink-0 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            {feria.cost}
+                          </span>
+                          <span className="text-brand-blue/40">·</span>
+                          <span className="inline-flex items-center gap-1">
+                            <svg className="w-3 h-3 shrink-0 text-brand-sky" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            {feria.dates}
+                          </span>
                         </p>
                       </div>
                     </div>
@@ -352,8 +364,9 @@ export function FeriasManager({
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 space-y-4 overflow-y-auto flex-1 scrollbar-none">
                 {generalError && (
-                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-semibold">
-                    ⚠️ {generalError}
+                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-semibold flex items-center gap-2">
+                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <span>{generalError}</span>
                   </div>
                 )}
 

@@ -270,7 +270,7 @@ export function DateTimePicker({ value, onChange, label, error, align = "left" }
     else if (diffDays > 1) timeRelative = `en ${diffDays} días`;
     else if (diffDays < -1) timeRelative = `hace ${Math.abs(diffDays)} días`;
 
-    return `📅 ${capitalizedDay}, ${selectedDate.getDate()} de ${monthName} a las ${hoursStr}:${minutesStr} hs (${timeRelative})`;
+    return `${capitalizedDay}, ${selectedDate.getDate()} de ${monthName} a las ${hoursStr}:${minutesStr} hs (${timeRelative})`;
   };
 
   // Formatter for main display input

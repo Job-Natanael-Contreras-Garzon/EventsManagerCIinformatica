@@ -1,5 +1,5 @@
 {
-  "name": "EventsCIInformatica",
+  "name": "Portal de Eventos · CI Ingeniería Informática",
   "short_name": "Eventos CI",
   "description": "Plataforma de registro y gestión de eventos del CI Informática. Inscríbete, gestiona tus entradas y mantente al día con la agenda.",
   "lang": "es",
@@ -8,8 +8,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#7C3AED",
-  "background_color": "#09090B",
+  "theme_color": "#07102b",
+  "background_color": "#07102b",
   "prefer_related_applications": false,
   "categories": ["education", "productivity"],
   "icons": [

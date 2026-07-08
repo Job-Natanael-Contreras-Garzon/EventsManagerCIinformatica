@@ -412,7 +412,7 @@ export function EventsManager({
         eventId: manualRegEvent.id,
       });
       if (res.success) {
-        setManualRegSuccess(`✅ Registrado correctamente. Código: ${res.data?.confirmationCode}`);
+        setManualRegSuccess(`Registrado correctamente. Código: ${res.data?.confirmationCode}`);
         setManualRegForm({ fullName: "", registerCode: "", email: "", phone: "", teamName: "", teamCode: "" });
         router.refresh();
       } else {
@@ -535,7 +535,10 @@ export function EventsManager({
                           </p>
                         )}
                         {event.winnerName && (
-                          <p className="text-[11px] text-amber-400 font-semibold mt-0.5">🏆 {event.winnerName}</p>
+                          <p className="text-[11px] text-amber-400 font-semibold mt-0.5 flex items-center gap-1">
+                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" /></svg>
+                            <span>{event.winnerName}</span>
+                          </p>
                         )}
                       </div>
                     </div>
@@ -572,7 +575,10 @@ export function EventsManager({
                           className="px-3 py-1.5 rounded-xl text-[10px] font-bold text-amber-400 border border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 active:scale-95 transition-all min-h-[36px]"
                           title="Establecer ganador"
                         >
-                          🏆 Ganador
+                          <span className="inline-flex items-center gap-1">
+                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" /></svg>
+                            Ganador
+                          </span>
                         </button>
                       )}
 
@@ -687,7 +693,10 @@ export function EventsManager({
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={() => setWinnerModalEvent(null)} />
           <div className="fixed inset-x-0 bottom-0 max-w-lg mx-auto bg-brand-dark border-t border-amber-500/30 rounded-t-3xl z-50 px-6 pt-4 pb-10 shadow-2xl max-h-[60vh] overflow-y-auto flex flex-col md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:border md:border-amber-500/30 md:max-h-[90vh]">
             <div className="w-12 h-1 bg-amber-500/30 rounded-full mx-auto mb-5 md:hidden" />
-            <h3 className="text-lg font-black tracking-tight text-white mb-1">🏆 Establecer Ganador</h3>
+            <h3 className="text-lg font-black tracking-tight text-white mb-1 flex items-center gap-2">
+              <svg className="w-5 h-5 shrink-0 text-amber-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" /></svg>
+              Establecer Ganador
+            </h3>
             <p className="text-xs text-brand-sky/60 mb-5">{winnerModalEvent.name}</p>
             <div className="flex flex-col gap-3">
               <label className="text-[10px] font-bold text-brand-sky/60 uppercase tracking-wider">
