@@ -31,12 +31,13 @@ export function HomeClient({
     <div className="h-screen h-[100dvh] overflow-hidden bg-transparent text-brand-light-gray flex flex-col items-center selection:bg-brand-sky selection:text-brand-navy">
       
       {/* Sticky Premium Header */}
-      <header className="sticky top-0 z-40 w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl bg-brand-dark/70 backdrop-blur-md border-b border-brand-blue/20 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
+      <header className="sticky top-0 z-40 w-full bg-brand-dark/80 backdrop-blur-md border-b border-brand-blue/20 shrink-0">
+        <div className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 md:px-6 py-3 md:py-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
           <img
             src="/assets/logoInformatica.webp"
             alt="CI Ingeniería Informática"
-            className="w-8 h-8 md:w-9 md:h-9 rounded-lg object-contain shadow-sm"
+            className="w-9 h-9 md:w-11 md:h-11 rounded-lg object-contain shadow-sm"
           />
           <div>
             <h1 className="text-sm md:text-base font-bold tracking-tight text-white leading-none">
@@ -61,6 +62,7 @@ export function HomeClient({
               En Vivo
             </span>
           </a>
+        </div>
         </div>
       </header>
 

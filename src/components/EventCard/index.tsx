@@ -54,7 +54,7 @@ export function EventCard({ event, className, onViewDetails }: EventCardProps) {
     statusText = "Finalizado";
     statusClass = "bg-zinc-800 text-zinc-400 border-zinc-700";
   } else if (isInProgress) {
-    statusText = "🔴 En Curso";
+    statusText = "En Curso";
     statusClass = "bg-cyan-500/10 text-cyan-400 border-cyan-500/30 animate-pulse";
   } else if (!event.isActive) {
     statusText = "Inscripción Cerrada";
@@ -122,7 +122,9 @@ export function EventCard({ event, className, onViewDetails }: EventCardProps) {
             {/* Winner premium badge displayed above the title */}
             {isFinished && event.winnerName && (
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/35 via-yellow-500/15 to-brand-navy/60 border border-amber-400/40 backdrop-blur-md self-start mb-1 text-white shadow-lg shadow-amber-500/10 max-w-full">
-                <span className="text-sm shrink-0">🏆</span>
+                <svg className="w-4 h-4 shrink-0 text-amber-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" />
+                </svg>
                 <div className="flex flex-col min-w-0">
                   <span className="text-[8px] font-bold text-amber-300 tracking-widest uppercase leading-none">Campeón</span>
                   <span className="text-[11px] font-black tracking-tight text-white leading-tight uppercase truncate">
@@ -137,20 +139,32 @@ export function EventCard({ event, className, onViewDetails }: EventCardProps) {
               {event.name}
             </h3>
             
-            <div className="flex flex-col gap-0.5 text-[11px] text-zinc-300 font-medium drop-shadow">
-              {!isDateHidden && <span suppressHydrationWarning>📅 {formattedEventDate}</span>}
-              
+            <div className="flex flex-col gap-1 text-[11px] text-zinc-300 font-medium drop-shadow">
+              {!isDateHidden && (
+                <span className="flex items-center gap-1.5" suppressHydrationWarning>
+                  <svg className="w-3.5 h-3.5 shrink-0 text-brand-sky/90" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  {formattedEventDate}
+                </span>
+              )}
+
               {event.type !== "OPEN" && !isOccupancyHidden && (
-                <span>
-                  👥 Inscritos: {event.currentRegistrations}
-                  {event.maxParticipants !== null && ` / ${event.maxParticipants} max`}
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 shrink-0 text-brand-sky/90" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span>Inscritos: {event.currentRegistrations}{event.maxParticipants !== null && ` / ${event.maxParticipants} max`}</span>
                 </span>
               )}
 
               {/* Dynamic labels list summary (e.g. Premios, Lugar) - limit to max 2 items on image card */}
               {event.customFields.slice(0, 2).map((field, i) => (
-                <span key={i} className="text-brand-sky/90 line-clamp-1">
-                  📌 {field.label}: {field.value}
+                <span key={i} className="flex items-center gap-1.5 text-brand-sky/90">
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  <span className="line-clamp-1">{field.label}: {field.value}</span>
                 </span>
               ))}
             </div>
@@ -188,7 +202,9 @@ export function EventCard({ event, className, onViewDetails }: EventCardProps) {
         {/* Top Winner Info */}
         {isFinished && event.winnerName && (
           <div className="mb-4 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/35 flex items-center gap-2">
-            <span className="text-[18px]">🏆</span>
+            <svg className="w-5 h-5 shrink-0 text-amber-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" />
+            </svg>
             <div>
               <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest block leading-none">Ganador oficial</span>
               <span className="text-xs font-bold text-white leading-tight">{event.winnerName}</span>
@@ -270,7 +286,9 @@ export function EventCard({ event, className, onViewDetails }: EventCardProps) {
 
           {/* Participación (Type) */}
           <div className="flex items-center gap-2">
-            <span className="text-brand-sky/40">⚙️</span>
+            <svg className={cn("w-4 h-4 shrink-0", styles.accent)} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
             <span>
               Modalidad:{" "}
               <strong className="font-semibold text-zinc-300">
@@ -282,7 +300,9 @@ export function EventCard({ event, className, onViewDetails }: EventCardProps) {
           {/* Género/Sexo */}
           {!isGenderHidden && (
             <div className="flex items-center gap-2">
-              <span className="text-brand-sky/40">⚧️</span>
+              <svg className={cn("w-4 h-4 shrink-0", styles.accent)} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c-1.306 0-2.417.835-2.83 2M15 11h3m-3 4h2" />
+              </svg>
               <span>
                 Categoría Género:{" "}
                 <strong className="font-semibold text-zinc-300">
@@ -295,7 +315,9 @@ export function EventCard({ event, className, onViewDetails }: EventCardProps) {
           {/* Custom Fields dynamic print */}
           {event.customFields.map((field, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="text-brand-sky/40">📌</span>
+              <svg className={cn("w-4 h-4 shrink-0", styles.accent)} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
               <span>
                 {field.label}: <strong className="font-semibold text-white">{field.value}</strong>
               </span>

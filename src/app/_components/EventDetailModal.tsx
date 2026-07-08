@@ -89,7 +89,7 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
     statusText = "Finalizado";
     statusClass = "bg-zinc-850 text-zinc-400 border-zinc-700";
   } else if (isInProgress) {
-    statusText = "🔴 En Curso";
+    statusText = "En Curso";
     statusClass = "bg-cyan-500/10 text-cyan-400 border-cyan-500/30 animate-pulse";
   } else if (!event.isActive) {
     statusText = "Inscripción Cerrada";
@@ -152,7 +152,9 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
             {/* Winner Box if exists */}
             {isFinished && event.winnerName && (
               <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3">
-                <span className="text-2xl">🏆</span>
+                <svg className="w-7 h-7 shrink-0 text-amber-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" />
+                </svg>
                 <div>
                   <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest block">Ganador del Torneo</span>
                   <span className="text-sm font-black text-white">{event.winnerName}</span>
@@ -198,7 +200,9 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
             {event.whatsappGroupUrl && (
               <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-2.5xl leading-none">💬</span>
+                  <svg className="w-6 h-6 shrink-0 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
                   <div>
                     <span className="text-[10px] font-bold text-emerald-450 uppercase tracking-widest block">Grupo de WhatsApp</span>
                     <span className="text-[11px] text-brand-light-gray/70">Únete al grupo oficial del torneo</span>
@@ -274,7 +278,9 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
               {/* Gender badge */}
               {!isGenderHidden && (
                 <div className="flex items-start gap-3">
-                  <span className="text-lg w-5 h-5 shrink-0 mt-0.5 text-center leading-none">⚧️</span>
+                  <svg className={cn("w-5 h-5 shrink-0 mt-0.5", styles.accent)} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c-1.306 0-2.417.835-2.83 2M15 11h3m-3 4h2" />
+                  </svg>
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mb-1">Categoría Género</p>
                     <span className="font-semibold text-brand-light-gray">{GENDER_LABELS[event.gender] ?? "Mixto"}</span>
@@ -285,7 +291,9 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
               {/* Custom fields print inside detail modal */}
               {event.customFields.map((field, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <span className="text-lg w-5 h-5 shrink-0 mt-0.5 text-center leading-none">📌</span>
+                  <svg className={cn("w-5 h-5 shrink-0 mt-0.5", styles.accent)} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mb-1">{field.label}</p>
                     <span className="font-semibold text-white">{field.value}</span>
@@ -337,8 +345,11 @@ export function EventDetailModal({ event, onClose }: EventDetailModalProps) {
         {/* Sticky Register CTA Footer */}
         <div className="p-6 bg-brand-dark/80 border-t border-brand-blue/20">
           {event.type === "OPEN" ? (
-            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-center text-xs font-bold text-amber-400">
-              ℹ️ Actividad abierta de libre participación. No requiere registro.
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center gap-2 text-center text-xs font-bold text-amber-400">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Actividad abierta de libre participación. No requiere registro.</span>
             </div>
           ) : isOpen ? (
             <Link
