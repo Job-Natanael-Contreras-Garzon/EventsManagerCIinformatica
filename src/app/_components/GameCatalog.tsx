@@ -162,7 +162,7 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
       </div>
 
       {/* Events List Container */}
-      <div className={cn("grid grid-cols-1 gap-5 transition-opacity duration-200", isPending ? "opacity-60" : "opacity-100")}>
+      <div className={cn("grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 transition-opacity duration-200", isPending ? "opacity-60" : "opacity-100")}>
         {filteredEvents.length > 0 ? (
           filteredEvents.map((event) => (
             <EventCard
@@ -173,7 +173,7 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
           ))
         ) : (
           /* Elegant Empty State */
-          <div className="flex flex-col items-center justify-center py-12 px-4 border border-brand-blue/20 rounded-2xl bg-brand-navy/40 text-center">
+          <div className="md:col-span-2 xl:col-span-3 flex flex-col items-center justify-center py-12 px-4 border border-brand-blue/20 rounded-2xl bg-brand-navy/40 text-center">
             <div className="w-16 h-16 rounded-full bg-brand-dark/60 border border-brand-blue/30 flex items-center justify-center text-brand-sky mb-4">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

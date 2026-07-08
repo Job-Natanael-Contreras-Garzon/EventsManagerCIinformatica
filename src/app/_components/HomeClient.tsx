@@ -31,18 +31,18 @@ export function HomeClient({
     <div className="h-screen h-[100dvh] overflow-hidden bg-transparent text-brand-light-gray flex flex-col items-center selection:bg-brand-sky selection:text-brand-navy">
       
       {/* Sticky Premium Header */}
-      <header className="sticky top-0 z-40 w-full max-w-md bg-brand-dark/70 backdrop-blur-md border-b border-brand-blue/20 px-4 py-3 flex items-center justify-between shrink-0">
+      <header className="sticky top-0 z-40 w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl bg-brand-dark/70 backdrop-blur-md border-b border-brand-blue/20 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <img
             src="/assets/logoInformatica.webp"
             alt="CI Ingeniería Informática"
-            className="w-8 h-8 rounded-lg object-contain shadow-sm"
+            className="w-8 h-8 md:w-9 md:h-9 rounded-lg object-contain shadow-sm"
           />
           <div>
-            <h1 className="text-sm font-bold tracking-tight text-white leading-none">
+            <h1 className="text-sm md:text-base font-bold tracking-tight text-white leading-none">
               Portal de Eventos
             </h1>
-            <span className="text-[10px] text-white/40 font-medium">
+            <span className="text-[10px] md:text-[11px] text-white/40 font-medium">
               CI INGENIERÍA INFORMÁTICA
             </span>
           </div>
@@ -65,10 +65,10 @@ export function HomeClient({
       </header>
 
       {/* Main App Container */}
-      <main className="w-full max-w-md px-4 pt-6 pb-24 flex-1 flex flex-col gap-6 overflow-y-auto scrollbar-none">
+      <main className="w-full max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl px-4 md:px-6 pt-6 pb-24 flex-1 flex flex-col gap-6 md:gap-8 overflow-y-auto scrollbar-none">
         
         {/* Welcoming Gradient Card */}
-        <section className="relative overflow-hidden rounded-2xl border border-brand-blue/30 bg-gradient-to-b from-brand-dark/80 via-brand-dark/55 to-brand-navy/30 p-5 shadow-lg shadow-brand-navy/40 shrink-0">
+        <section className="relative overflow-hidden rounded-2xl border border-brand-blue/30 bg-gradient-to-b from-brand-dark/80 via-brand-dark/55 to-brand-navy/30 p-5 md:p-7 shadow-lg shadow-brand-navy/40 shrink-0">
           <div className="absolute top-0 right-0 -mt-6 -mr-6 w-28 h-28 bg-brand-blue/15 rounded-full blur-2xl animate-pulse" />
           <div className="absolute bottom-0 left-0 -mb-6 -ml-6 w-24 h-24 bg-brand-sky/5 rounded-full blur-xl" />
           
@@ -76,10 +76,10 @@ export function HomeClient({
             <span className="text-[9px] font-black text-brand-sky uppercase tracking-widest bg-brand-sky/10 px-2.5 py-0.5 rounded-full border border-brand-sky/20 inline-block">
               {systemConfig.title1}
             </span>
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white leading-tight">
               {activeMainTab === "eventos" ? systemConfig.title2 : systemConfig.feriaTitle2}
             </h2>
-            <p className="text-xs leading-relaxed text-brand-light-gray/80 pt-0.5">
+            <p className="text-xs md:text-sm leading-relaxed text-brand-light-gray/80 pt-0.5 md:max-w-2xl">
               {activeMainTab === "eventos" 
                 ? systemConfig.description 
                 : systemConfig.feriaDescription}
@@ -98,7 +98,7 @@ export function HomeClient({
       </main>
 
       {/* Fixed Bottom Navigation (Standard App/PWA look) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 w-full max-w-md mx-auto h-[calc(4rem+env(safe-area-inset-bottom,0px))] pb-safe bg-brand-dark/95 backdrop-blur-md border-t border-brand-blue/20 flex items-center justify-around px-4 shrink-0">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 w-full max-w-md mx-auto h-[calc(4rem+env(safe-area-inset-bottom,0px))] pb-safe bg-brand-dark/95 backdrop-blur-md border-t border-brand-blue/20 flex items-center justify-around px-4 shrink-0 md:bottom-5 md:h-16 md:rounded-2xl md:border md:border-brand-blue/25 md:shadow-2xl md:shadow-brand-navy/60">
         
         {/* Nav Item: Eventos */}
         <button

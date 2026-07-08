@@ -54,7 +54,7 @@ export function FeriaCatalog({ initialFerias }: FeriaCatalogProps) {
       </div>
 
       {/* Ferias List Container */}
-      <div className="grid grid-cols-1 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {filteredFerias.length > 0 ? (
           filteredFerias.map((feria) => (
             <FeriaCard
@@ -64,7 +64,7 @@ export function FeriaCatalog({ initialFerias }: FeriaCatalogProps) {
           ))
         ) : (
           /* Elegant Empty State */
-          <div className="flex flex-col items-center justify-center py-12 px-4 border border-brand-blue/20 rounded-2xl bg-brand-navy/40 text-center">
+          <div className="md:col-span-2 xl:col-span-3 flex flex-col items-center justify-center py-12 px-4 border border-brand-blue/20 rounded-2xl bg-brand-navy/40 text-center">
             <div className="w-16 h-16 rounded-full bg-brand-dark/60 border border-brand-blue/30 flex items-center justify-center text-brand-sky mb-4 font-bold text-lg">
               🎪
             </div>
