@@ -306,6 +306,36 @@ export async function updateEventStatus(
 }
 
 /**
+ * Server Action: Fija o desfija un evento (destacado).
+ * Solo los administradores pueden fijar eventos. Se pueden fijar varios.
+ * Los eventos fijados aparecen primero y resaltados en el catálogo público.
+ */
+export async function togglePinEvent(
+  eventId: string,
+  isPinned: boolean
+): Promise<ActionResult> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    return { success: false, error: "Acceso denegado. Solo los administradores pueden fijar eventos." };
+  }
+
+  try {
+    await db.event.update({
+      where: { id: eventId },
+      data: { isPinned },
+    });
+
+    revalidatePath("/admin/eventos");
+    revalidatePath("/");
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("Error al fijar/desfijar el evento:", error);
+    return { success: false, error: "Ocurrió un error al fijar el evento." };
+  }
+}
+
+/**
  * Server Action: Establece o quita el ganador de un evento.
  * winnerName = null para quitar el ganador.
  */

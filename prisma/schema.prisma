@@ -51,6 +51,8 @@ model Event {
   winnerParticipantId  String?
   /// ID del equipo ganador (opcional)
   winnerTeamId         String?
+  /// Evento fijado/destacado por el admin: aparece primero y resaltado en el catálogo público
+  isPinned             Boolean        @default(false)
   /// Campos dinámicos adicionales en formato JSON: [{ label, value }]
   customFields         Json           @default("[]")
   /// Campos desactivados del catálogo público (array de nombres de campo)

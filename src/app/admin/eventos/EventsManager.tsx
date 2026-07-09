@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { DateTimePicker } from "./DateTimePicker";
 import { eventSchema, type EventInput } from "@/modules/events/schema";
-import { upsertEvent, deleteEvent, createCategory, deleteCategory, updateEventStatus, setEventWinner } from "@/modules/events/actions";
+import { upsertEvent, deleteEvent, createCategory, deleteCategory, updateEventStatus, setEventWinner, togglePinEvent } from "@/modules/events/actions";
 import { registerPlayerManually } from "@/modules/registration/actions-manual";
 import { uploadEventImage, removeEventImage } from "@/modules/events/upload-image-action";
 import { ImageUploadField } from "./ImageUploadField";
@@ -50,6 +50,7 @@ interface EventData {
   gender: string;
   date: Date;
   isActive: boolean;
+  isPinned: boolean;
   registrationDeadline: Date | null;
   maxParticipants: number | null;
   maxTeamMembers: number;
@@ -142,6 +143,10 @@ export function EventsManager({
 
   // Status change state
   const [isStatusPending, startStatusTransition] = useTransition();
+
+  // Pin/unpin state
+  const [isPinPending, startPinTransition] = useTransition();
+  const [pinningId, setPinningId] = useState<string | null>(null);
 
   // Manual registration modal
   const [manualRegEvent, setManualRegEvent] = useState<EventData | null>(null);
@@ -387,6 +392,16 @@ export function EventsManager({
     });
   };
 
+  const handleTogglePin = (eventId: string, nextPinned: boolean) => {
+    setPinningId(eventId);
+    startPinTransition(async () => {
+      const res = await togglePinEvent(eventId, nextPinned);
+      setPinningId(null);
+      if (!res.success) alert(res.error ?? "Error al fijar el evento.");
+      else router.refresh();
+    });
+  };
+
   const handleSetWinner = () => {
     if (!winnerModalEvent) return;
     startWinnerTransition(async () => {
@@ -501,6 +516,14 @@ export function EventsManager({
                   >
                     {/* Badge line */}
                     <div className="flex items-center gap-1.5 flex-wrap">
+                      {event.isPinned && (
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-sky/20 border border-brand-sky/40 text-brand-sky">
+                          <svg className="w-2.5 h-2.5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                          </svg>
+                          Destacado
+                        </span>
+                      )}
                       <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-dark/60 border border-brand-blue/20 text-white/60">
                         {event.category.name}
                       </span>
@@ -551,6 +574,27 @@ export function EventsManager({
                       >
                         Editar
                       </button>
+
+                      {/* Fijar / Desfijar — solo admin */}
+                      {currentUserRole === "ADMIN" && (
+                        <button
+                          onClick={() => handleTogglePin(event.id, !event.isPinned)}
+                          disabled={isPinPending && pinningId === event.id}
+                          className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border active:scale-95 transition-all min-h-[36px] disabled:opacity-50 ${
+                            event.isPinned
+                              ? "text-brand-navy bg-brand-sky border-brand-sky"
+                              : "text-brand-sky bg-brand-sky/10 border-brand-sky/25 hover:bg-brand-sky/20"
+                          }`}
+                          title={event.isPinned ? "Quitar destacado" : "Fijar como destacado"}
+                        >
+                          <span className="inline-flex items-center gap-1">
+                            <svg className="w-3.5 h-3.5 shrink-0" fill={event.isPinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                            </svg>
+                            {event.isPinned ? "Fijado" : "Fijar"}
+                          </span>
+                        </button>
+                      )}
 
                       {/* Cambiar estado */}
                       <select

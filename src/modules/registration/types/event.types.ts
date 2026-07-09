@@ -50,6 +50,8 @@ export interface ActiveEvent {
   currentRegistrations: number;
   /** Controla si las inscripciones están abiertas o cerradas */
   isActive: boolean;
+  /** Evento destacado/fijado por el admin (aparece primero y resaltado) */
+  isPinned: boolean;
   /** Imagen de portada del evento en formato Base64 */
   imageBase64?: string | null;
   /** Nombre del ganador/equipo ganador (opcional) */

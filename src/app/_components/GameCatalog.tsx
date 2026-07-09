@@ -76,9 +76,12 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
     return true;
   });
 
-  // Ordenar por estado: abiertos primero, finalizados al final (sin tocar la BD).
+  // Ordenar por estado: fijados primero, luego abiertos, finalizados al final.
   // Empate de estado -> abiertos por fecha más próxima; finalizados por fecha más reciente.
   const sortedEvents = [...filteredEvents].sort((a, b) => {
+    // Los eventos fijados por el admin siempre van primero.
+    if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+
     const rankA = getStatusRank(a);
     const rankB = getStatusRank(b);
     if (rankA !== rankB) return rankA - rankB;
