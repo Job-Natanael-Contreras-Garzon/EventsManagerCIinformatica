@@ -54,7 +54,7 @@ export function FeriaCatalog({ initialFerias }: FeriaCatalogProps) {
       </div>
 
       {/* Ferias List Container */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-start">
         {filteredFerias.length > 0 ? (
           filteredFerias.map((feria) => (
             <FeriaCard

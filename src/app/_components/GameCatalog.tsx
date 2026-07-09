@@ -24,6 +24,25 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
     new Set(initialEvents.map((event) => event.category.name))
   ).sort();
 
+  // Rango de estado para ordenar: menor = aparece primero.
+  // Refleja la misma lógica de estado que EventCard, sin tocar la BD.
+  // 0 = Inscripción abierta, 1 = En curso, 2 = Cerrado/Plazo vencido/Cupos llenos, 3 = Finalizado
+  const getStatusRank = (event: ActiveEvent): number => {
+    const now = new Date();
+    const deadline = event.registrationDeadline ? new Date(event.registrationDeadline) : null;
+    const isDeadlinePassed = deadline ? deadline < now : false;
+    const isFull =
+      event.maxParticipants !== null && event.currentRegistrations >= event.maxParticipants;
+    const isFinished = event.status === "FINISHED";
+    const isInProgress = event.status === "IN_PROGRESS";
+    const isOpen = event.isActive && !isDeadlinePassed && !isFull && !isFinished;
+
+    if (isOpen) return 0;
+    if (isInProgress) return 1;
+    if (isFinished) return 3;
+    return 2; // Inscripción cerrada, plazo vencido o cupos llenos
+  };
+
   // Toggle type filter: pressing the active chip again clears the filter
   const handleTabChange = (tab: "individual" | "team") => {
     startTransition(() => {
@@ -55,6 +74,19 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
     }
 
     return true;
+  });
+
+  // Ordenar por estado: abiertos primero, finalizados al final (sin tocar la BD).
+  // Empate de estado -> abiertos por fecha más próxima; finalizados por fecha más reciente.
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    const rankA = getStatusRank(a);
+    const rankB = getStatusRank(b);
+    if (rankA !== rankB) return rankA - rankB;
+
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    // Finalizados (rank 3): más reciente primero. Resto: más próximo primero.
+    return rankA === 3 ? dateB - dateA : dateA - dateB;
   });
 
   return (
@@ -163,8 +195,8 @@ export function GameCatalog({ initialEvents }: GameCatalogProps) {
 
       {/* Events List Container */}
       <div className={cn("grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 transition-opacity duration-200", isPending ? "opacity-60" : "opacity-100")}>
-        {filteredEvents.length > 0 ? (
-          filteredEvents.map((event) => (
+        {sortedEvents.length > 0 ? (
+          sortedEvents.map((event) => (
             <EventCard
               key={event.id}
               event={event}
